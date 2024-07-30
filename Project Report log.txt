@@ -1,0 +1,8 @@
+Nexify - Social Media Web-app
+
+Date:30/7/2024
+- Database Model Created
+- Modules and components Created
+- Extra Features sidelined
+- Next up is mapping all the components
+- Making a working login page with authentication by this week
