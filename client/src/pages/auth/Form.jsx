@@ -1,12 +1,14 @@
 import React from 'react'
 import Button from '../../components/button/Button'
 import Input from '../../components/input/Input'
-import { useState } from 'react'
-
+import { useNavigate } from 'react-router-dom'
 const Form = ({
-    // isSignInPage = false,
+    // isSignInPage = true
+    isSignInPage = window.location.pathname.includes('signin')
+
 }) => {
-    const [isSignInPage, setisSignInPage] = useState(true)
+    // const [isSignInPage, setisSignInPage] = useState(true)
+    const navigate = useNavigate()
   return (
     <div className='bg-slate-100 h-screen w-full flex justify-center items-center'>
         <div className='h-[710px] w-[1100px] bg-white flex justify-center items-center'>
@@ -20,10 +22,9 @@ const Form = ({
                     }
                     <Input label='Email' type='text' placeholder='Enter your email'/>
                     <Input label='Password' type='password' placeholder='Enter your password'/>
-                    <Button label='Log In'/>
+                    <Button label={isSignInPage ? 'Login' : 'SignUp'}/>
                 </form>
-                <div className='cursor-pointer' onClick={() => setisSignInPage(!isSignInPage)}> 
-
+                <div className='cursor-pointer' onClick={() => navigate(`${isSignInPage ? '/ac/signup' : '/ac/signin'}`)}> 
                     {isSignInPage ? 'Create New Account' : 'Already a existing user? Signin here'}
                 </div>
             </div>
