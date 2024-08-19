@@ -24,7 +24,7 @@ const Form = ({
                 </form>
                 <div className='cursor-pointer' onClick={() => setisSignInPage(!isSignInPage)}> 
 
-                    {isSignInPage ? 'Create New Account' : 'Already existing user? Signin here'}
+                    {isSignInPage ? 'Create New Account' : 'Already a existing user? Signin here'}
                 </div>
             </div>
             <div className={`bg-gray-200 h-full w-full ${!isSignInPage && 'order-1'}`}>
