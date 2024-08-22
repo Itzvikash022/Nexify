@@ -18,25 +18,30 @@ export const data = [
     },
 ]
 
-// export const links = [
-//     {
-//         id: 1,
-//         name: 'Feed',
-//         icon: <IconNews />
-//     },
-//     {
-//         id: 2,
-//         name: 'Saved',
-//         icon: <IconBookmark />
-//     },
-//     {
-//         id: 3,
-//         name: 'Direct',
-//         icon: <IconMessageCircle />
-//     },
-//     {
-//         id: 4,
-//         name: 'Profile',
-//         icon: <IconUser />
-//     },
-// ]
+export const links = [
+    {
+        id: 1,
+        name: 'Feed',
+        icon: <IconNews />,
+        url: '/'
+    },
+    {
+        id: 2,
+        name: 'Saved',
+        icon: <IconBookmark />,
+        url: '/'
+    },
+    {
+        id: 3,
+        name: 'Direct',
+        icon: <IconMessageCircle />,
+        url: '/'
+    },
+    {
+        id: 4,
+        name: 'Profile',
+        icon: <IconUser />,
+        url: '/profile'
+    },
+    
+]
