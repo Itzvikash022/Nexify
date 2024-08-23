@@ -20,11 +20,12 @@ const Others = () => {
             })
             const postData = await response.json()
             setData(postData.posts)
-            setUser(postData.user)
+            setUser(postData.userDetails)
         }
         getPosts()
     },[])
     console.log(postData, 'data');
+    const postCount = postData.length
   return (
     <div className='flex justify-center mt-[50px]'>
         <div className='p-4 flex flex-col items-center'>
@@ -36,19 +37,21 @@ const Others = () => {
                             <path d="M16.5 6.5C16.5 8.98528 14.4853 11 12 11C9.51472 11 7.5 8.98528 7.5 6.5C7.5 4.01472 9.51472 2 12 2C14.4853 2 16.5 4.01472 16.5 6.5Z" stroke="currentColor" stroke-width="1.5" />
                         </svg>
                     </div>
-                    <p className='mt-4 text-center font-bold text-xl'>Name here</p>
-                    <p className='mb-4 text-center text-xl'>@username_here</p>
+                    <p className='mt-4 text-center font-bold text-xl'>{user?.username}</p>
+                    <p className='mb-4 text-center text-xl'>{user?.email}</p>
                     <div className='text-lg flex justify-around w-[600px] text-center'>
-                        {
-                            data.map(({id, name, count}) => {
-                                return(
-                                <div key={id} className='flex flex-col justify-around items-center'>
-                                    <h4 className='font-bold text-xl'>{count}</h4>
-                                    <p className='text-lg font-bold'>{name}</p>
-                                </div> 
-                                )
-                            })
-                        }
+                        <div className='flex flex-col justify-around items-center'>
+                            <h4 className='font-bold text-xl'>{postCount}</h4>
+                            <p className='text-lg font-bold'>Posts</p>
+                        </div>
+                        <div className='flex flex-col justify-around items-center'>
+                            <h4 className='font-bold text-xl'>{user?.followers}</h4>
+                            <p className='text-lg font-bold'>Followers</p>
+                        </div>
+                        <div className='flex flex-col justify-around items-center'>
+                            <h4 className='font-bold text-xl'>{user?.following}</h4>
+                            <p className='text-lg font-bold'>Following</p>
+                        </div>
                     </div>
                     <div>
                     <Button 

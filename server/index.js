@@ -139,7 +139,13 @@ app.get('/api/profile', auth, async (req, res) => {
     try {
         const { user } = req;
         const posts = await Posts.find({ user : user._id})
-        res.status(200).json({ posts, user })
+        const userDetails = {
+            username: user.username,
+            email: user.email,
+            followers: user.followers,
+            following: user.following,
+        };
+        res.status(200).json({ posts, userDetails })
                 
     } catch (error) {
         res.status(500).send(`error : ${error.message}`)
@@ -159,6 +165,8 @@ app.get('/api/others', auth, async (req, res) => {
         const userDetails = {
             username: user.username,
             email: user.email,
+            followers: user.followers,
+            following: user.following,
         };
         res.status(200).json({ posts, userDetails });
                 

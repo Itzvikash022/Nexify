@@ -28,7 +28,6 @@ const Home = () => {
     },[])
     console.log(postData, 'data');
     const { _id = '', username = '', email = '', followers = '', following = ''  } = user || {}
-    
   return (
     <div className='h-screen w-full bg-gray-200 flex overflow-hidden'>
         {/* SideBar one */}
@@ -54,7 +53,6 @@ const Home = () => {
                                 )
                             })
                         } */}
-
                         <div className='flex flex-col justify-around items-center'>
                             <h4 className='font-bold'>{followers}</h4>
                             <p>Followers</p>
