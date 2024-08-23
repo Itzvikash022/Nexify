@@ -21,7 +21,8 @@ import('./database/connect.js')
 
 //import Schema
 import Users from './models/user.js'
-import Posts from './models/post.js';
+import Posts from './models/post.js'
+import Follow from './models/follow.js'
 
 //import Middleware
 import auth from './middleware/auth.js';
@@ -138,7 +139,7 @@ app.post('/api/new-post', auth, async (req, res) =>{
 app.get('/api/profile', auth, async (req, res) => {
     try {
         const { user } = req;
-        const posts = await Posts.find({ user : user._id})
+        const posts = await Posts.find({ user : user._id}).sort({ createdAt : -1 })
         const userDetails = {
             username: user.username,
             email: user.email,
@@ -156,19 +157,23 @@ app.get('/api/profile', auth, async (req, res) => {
 app.get('/api/others', auth, async (req, res) => {
     try {
         const { email } = req.query;
+        const { user : follower } = req;
         const user = await Users.findOne({ email });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
         
-        const posts = await Posts.find({ user: user._id });
+        const posts = await Posts.find({ user: user._id }).sort({ createdAt : -1 }) 
+        const [isFollowed] = await Follow.find({follower: follower._id, followed: user.id})
+        console.log(isFollowed, 'followed')
         const userDetails = {
             username: user.username,
             email: user.email,
             followers: user.followers,
             following: user.following,
+            id: user._id,
         };
-        res.status(200).json({ posts, userDetails });
+        res.status(200).json({ posts, userDetails, isFollowed: !!isFollowed}); //by putting !! -> the variable passes value in boolean[true/false]
                 
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -180,13 +185,51 @@ app.get('/api/others', auth, async (req, res) => {
 app.get('/api/feed', auth, async (req, res) => {
     try {
         const { user } = req;
-        const posts = await Posts.find().populate('user','_id username email')
+        const posts = await Posts.find().populate('user','_id username email').sort({ createdAt : -1 })
         res.status(200).json({ posts, user })
                 
     } catch (error) {
         res.status(500).send(`error : ${error.message}`)
     }
 })
+
+//Follow User
+app.post('/api/follow', auth, async (req, res)=>{
+    try {
+        const { id } = req.body;
+        const { user } = req;
+        if(!id) return res.status(404).send('id is empty')
+        
+        const [FollowedUser] = await Users.find({ _id: id})
+        const FollowUser = new Follow({
+            follower: user,
+            followed: FollowedUser
+        })
+
+        await FollowUser.save()
+        res.status(200).json({ isFollowed: true })
+        
+    } catch (error) {
+        res.status(500).send(`error : ${error.message}`)
+    }
+})
+
+//Unfollow User
+app.delete('/api/unfollow', auth, async (req, res)=>{
+    try {
+        const { id } = req.body;
+        const { user } = req;
+        if(!id) return res.status(404).send('id is empty')
+        
+        await Follow.deleteOne({ follower: user._id, followed: id})
+
+        res.status(200).json({ isFollowed: false })
+        
+    } catch (error) {
+        res.status(500).send(`error : ${error.message}`)
+    }
+})
+
 
 const PORT = process.env.PORT || 8000;
 

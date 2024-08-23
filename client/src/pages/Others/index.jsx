@@ -8,6 +8,7 @@ const Others = () => {
     const {email} = useParams()
     const [postData, setData] = useState([])
     const [user, setUser] = useState({})
+    const [isFollowed, setIsFollowed] = useState(false)
 
     useEffect(()=>{
         const getPosts = async()=>{
@@ -21,11 +22,42 @@ const Others = () => {
             const postData = await response.json()
             setData(postData.posts)
             setUser(postData.userDetails)
+            setIsFollowed(postData?.isFollowed)
         }
         getPosts()
     },[])
+
     console.log(postData, 'data');
     const postCount = postData.length
+
+    const handleFollow = async() =>{
+        const response =await fetch(`http://localhost:8000/api/follow`,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('user:token')}`
+            },
+            body: JSON.stringify({id : user.id})
+        })
+        console.log(response, 'res');
+        const followData = await response.json()
+        setIsFollowed(followData?.isFollowed)
+    }
+
+    const handleUnfollow = async() =>{
+        const response =await fetch(`http://localhost:8000/api/unfollow`,{
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('user:token')}`
+            },
+            body: JSON.stringify({id : user.id})
+        })
+        console.log(response, 'res');
+        const followData = await response.json()
+        setIsFollowed(followData?.isFollowed)
+    }
+
   return (
     <div className='flex justify-center mt-[50px]'>
         <div className='p-4 flex flex-col items-center'>
@@ -54,11 +86,20 @@ const Others = () => {
                         </div>
                     </div>
                     <div>
-                    <Button 
-                        label='Follow' 
-                        onClick={() => console.log('Follow clicked')}
-                        className='w-[200px] bg-green-600 hover:bg-green-400 my-6'
-                        />
+                        {
+                            !isFollowed ?
+                            <Button 
+                                label='Follow' 
+                                onClick={() => handleFollow()}
+                                className='w-[200px] bg-green-600 hover:bg-green-400 my-6'
+                            />
+                            :
+                            <Button 
+                                label='Unfollow' 
+                                onClick={() => handleUnfollow()}
+                                className='w-[200px] bg-red-600 hover:bg-red-500 my-6'
+                            />
+                        }
                     </div>
                 </div>
             </div>
