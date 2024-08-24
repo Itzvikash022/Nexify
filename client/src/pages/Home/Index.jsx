@@ -10,6 +10,7 @@ const Home = () => {
     const navigate = useNavigate()
     const [postData, setData] = useState([])
     const [user, setUser] = useState({})
+    const [isLiked, setIsLiked] = useState(false)
 
     useEffect(()=>{
         const getPosts = async()=>{
@@ -28,6 +29,32 @@ const Home = () => {
     },[])
     console.log(postData, 'data');
     const { _id = '', username = '', email = '', followers = '', following = ''  } = user || {}
+
+    const handleLike = async (_id, index) =>{
+        const response =await fetch('http://localhost:8000/api/like',{
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('user:token')}`
+            },
+            body: JSON.stringify({ id: _id })
+        }) 
+        const { updatedPost} = await response.json()
+        postData[index] = updatedPost
+    }
+
+    const handleUnlike = async (_id, index) =>{
+        const response =await fetch('http://localhost:8000/api/unlike',{
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('user:token')}`
+            },
+            body: JSON.stringify({ id: _id })
+        }) 
+        const { updatedPost} = await response.json()
+        postData[index] = updatedPost
+    }
   return (
     <div className='h-screen w-full bg-gray-200 flex overflow-hidden'>
         {/* SideBar one */}
@@ -96,7 +123,8 @@ const Home = () => {
 
                 {/* POST Mapping */}
             {
-                postData?.map(({caption = '', description = '', imageUrl = '', user = {}}) => {
+                postData?.map(({_id = '', caption = '', description = '', imageUrl = '', likes = [] .user = {}. likes = []}, index) => {
+                    const isAlreadyLiked = likes.length > 0 && likes.includes(user._id)
                     return(
                         <div className='bg-white w-[78%] mx-auto mt-32 p-8 rounded-md'>
                             <div className='border-b flex items-center pb-4 mb-4 cursor-pointer' onClick={()=> email === user.email ? navigate('/profile') : navigate(`/user/${user?.email }`)}>
@@ -122,8 +150,8 @@ const Home = () => {
                             </div>
                             <div className='flex justify-evenly font-bold mt-2'>
                                 <div className='flex items-center'>
-                                    <IconHeart size={24} className='mr-2' cursor='pointer'/> 
-                                    <span>10.5K Likes</span>
+                                    <IconHeart size={24} className='mr-2' color={isAlreadyLiked? 'red' : 'black'} fill={isAlreadyLiked? 'red' : 'white'} cursor='pointer' onClick={()=> isAlreadyLiked? handleUnlike(_id, index) : handleLike(_id, index)}/> 
+                                    <span>{likes.length} Likes</span>
                                 </div>
                                 <div className='flex items-center'>
                                     <IconMessage size={24} className='mr-2' cursor='pointer'/> 

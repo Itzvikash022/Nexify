@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import Button from '../../components/button/Button'
 import Input from '../../components/input/Input'
 import { useNavigate } from 'react-router-dom'
+import bg_img from '../../assets/login_background.jpg'
+import login_side from '../../assets/login_side.jpeg'
 const Form = ({
     // isSignInPage = true
     isSignInPage = window.location.pathname.includes('signin')
@@ -37,9 +39,10 @@ const Form = ({
         
     }
   return (
-    <div className='bg-slate-100 h-screen w-full flex justify-center items-center'>
-        <div className='h-[710px] w-[1100px] bg-white flex justify-center items-center'>
+    <div className='bg-slate-100 bg-center bg-cover h-screen w-full flex justify-center items-center' style={{ backgroundImage: `url(${bg_img})` }}>
+        <div className='h-[770px] w-[1500px] rounded-xl opacity-90 bg-white flex justify-center items-center shadow-xl'>
             <div className={`h-full w-full flex flex-col justify-center items-center  ${!isSignInPage && 'order-2'}`}>
+
                 <div className='text-3xl'>Welcome</div>
                 <div>Please {isSignInPage ? 'Login' : 'Sign Up'} to continue</div>
                 <form className='w-[350px]' onSubmit={(e) => {
@@ -58,12 +61,15 @@ const Form = ({
                     {isSignInPage ? 'Create New Account' : 'Already a existing user? Signin here'}
                 </div>
             </div>
-            <div className={`bg-gray-200 h-full w-full ${!isSignInPage && 'order-1'}`}>
+                <div className={`bg-gray-200 h-full w-full ${!isSignInPage && 'order-1'}`}>
 
+                <div className={`h-full w-[750px] bg-gray-200 ${!isSignInPage ? 'order-1' : 'order-2'}`} 
+                style={{ backgroundImage: `url(${login_side})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                </div>
             </div>
         </div>
     </div>
   )
 }
 
-export default Form
+export default Form 

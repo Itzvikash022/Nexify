@@ -230,6 +230,42 @@ app.delete('/api/unfollow', auth, async (req, res)=>{
     }
 })
 
+//Like Post
+app.put('/api/like', auth, async (req, res)=>{
+    try {
+        const { id } = req.body;
+        const { user } = req;
+        if(!id) return res.status(404).send('id is empty')
+
+        const updatedPost = await Posts.updateOne({ _id: id }, {
+            $push: { likes: user._id }
+        })
+        
+        res.status(200).json({ updatedPost })
+        
+    } catch (error) {
+        res.status(500).send(`error : ${error.message}`)
+    }
+})
+
+//Unlike Post
+app.put('/api/unlike', auth, async (req, res)=>{
+    try {
+        const { id } = req.body;
+        const { user } = req;
+        if(!id) return res.status(404).send('id is empty')
+
+        const updatedPost = await Posts.updateOne({ _id: id }, {
+            $pull: { likes: user._id }
+        })
+        
+        res.status(200).json({ updatedPost })
+        
+    } catch (error) {
+        res.status(500).send(`error : ${error.message}`)
+    }
+})
+
 
 const PORT = process.env.PORT || 8000;
 
