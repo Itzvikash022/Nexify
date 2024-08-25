@@ -173,7 +173,7 @@ app.get('/api/others', auth, async (req, res) => {
             following: user.following,
             id: user._id,
         };
-        res.status(200).json({ posts, userDetails, isFollowed: !!isFollowed}); //by putting !! -> the variable passes value in boolean[true/false]
+        res.status(200).json({ posts, userDetails, follower : follower._id ,isFollowed: !!isFollowed }); //by putting !! -> the variable passes value in boolean[true/false]
                 
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -237,9 +237,9 @@ app.put('/api/like', auth, async (req, res)=>{
         const { user } = req;
         if(!id) return res.status(404).send('id is empty')
 
-        const updatedPost = await Posts.updateOne({ _id: id }, {
+        const updatedPost = await Posts.findOneAndUpdate({ _id: id }, {
             $push: { likes: user._id }
-        })
+        }, {returnDocument : 'after'}).populate('user','_id username email').sort({ createdAt : -1 })
         
         res.status(200).json({ updatedPost })
         
@@ -255,9 +255,9 @@ app.put('/api/unlike', auth, async (req, res)=>{
         const { user } = req;
         if(!id) return res.status(404).send('id is empty')
 
-        const updatedPost = await Posts.updateOne({ _id: id }, {
+        const updatedPost = await Posts.findOneAndUpdate({ _id: id }, {
             $pull: { likes: user._id }
-        })
+        }, {returnDocument : 'after'}).populate('user','_id username email').sort({ createdAt : -1 })
         
         res.status(200).json({ updatedPost })
         

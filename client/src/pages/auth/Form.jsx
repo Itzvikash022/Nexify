@@ -4,6 +4,8 @@ import Input from '../../components/input/Input'
 import { useNavigate } from 'react-router-dom'
 import bg_img from '../../assets/login_background.jpg'
 import login_side from '../../assets/login_side.jpeg'
+
+
 const Form = ({
     // isSignInPage = true
     isSignInPage = window.location.pathname.includes('signin')
@@ -35,6 +37,10 @@ const Form = ({
             console.log(token, user, 'response');
             localStorage.setItem('user:token', token);
             navigate('/');
+        } else if(res.status === 401){
+            alert('Invalid Credentials')
+        } else {
+            alert('Some error occurred... Please try again later')
         }
         
     }

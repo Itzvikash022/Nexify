@@ -4,16 +4,20 @@ import Button from '../../components/button/Button'
 import {IconUser, IconSearch, IconHeart, IconMessage, IconShare, IconBookmark, IconMessageCircle, IconNews} from '@tabler/icons-react'
 import {links} from './data'
 import {Link, useNavigate} from 'react-router-dom'
+import ClipLoader from "react-spinners/ClipLoader";
+import BarLoader from "react-spinners/BarLoader";
+
  
 // import { links } from "./data";
 const Home = () => {
     const navigate = useNavigate()
     const [postData, setData] = useState([])
     const [user, setUser] = useState({})
-    const [isLiked, setIsLiked] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     useEffect(()=>{
         const getPosts = async()=>{
+            setLoading(true)
             const response =await fetch('http://localhost:8000/api/feed',{
                 method: 'GET',
                 headers: {
@@ -24,6 +28,7 @@ const Home = () => {
             const postData = await response.json()
             setData(postData.posts)
             setUser(postData.user)
+            setLoading(false)
         }
         getPosts()
     },[])
@@ -40,7 +45,12 @@ const Home = () => {
             body: JSON.stringify({ id: _id })
         }) 
         const { updatedPost} = await response.json()
-        postData[index] = updatedPost
+        const updatePost = postData.map((post, i) => {
+            if( i === index) return updatedPost
+            else return post
+        })
+        // postData[index] = updatedPost
+        setData(updatePost)
     }
 
     const handleUnlike = async (_id, index) =>{
@@ -53,13 +63,21 @@ const Home = () => {
             body: JSON.stringify({ id: _id })
         }) 
         const { updatedPost} = await response.json()
-        postData[index] = updatedPost
+        const updatePost = postData.map((post, i) => {
+            if( i === index) return updatedPost
+            else return post
+        })
+        // postData[index] = updatedPost
+        setData(updatePost)
     }
   return (
     <div className='h-screen w-full bg-gray-200 flex overflow-hidden'>
         {/* SideBar one */}
         <div className='w-[20%] bg-white'>
             <div className='h-[30%] flex justify-center items-center border-b'>
+                {
+                    loading ? 
+                    <BarLoader size={10} color="#000000" /> : 
                 <div className='flex flex-col items-center'>
                     <div className='flex justify-center flex-col items-center w-[100px] h-[100px] rounded-full border-2 border-gray-200 '>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="75px" height="75px" color="#000000" fill="black">
@@ -73,13 +91,13 @@ const Home = () => {
                         {/* {
                             data.map(({id, name, count}) => {
                                 return(
-                                <div key={id} className='flex flex-col justify-around items-center'>
+                                    <div key={id} className='flex flex-col justify-around items-center'>
                                     <h4 className='font-bold'>{count}</h4>
                                     <p>{name}</p>
-                                </div> 
-                                )
-                            })
-                        } */}
+                                    </div> 
+                                    )
+                                    })
+                                    } */}
                         <div className='flex flex-col justify-around items-center'>
                             <h4 className='font-bold'>{followers}</h4>
                             <p>Followers</p>
@@ -90,6 +108,7 @@ const Home = () => {
                         </div> 
                     </div>
                 </div>
+                }
             </div>
             {/* <div className='h-[55%] flex flex-col justify-evenly pl-12  border-b'>
                 <div>Home</div>
@@ -118,16 +137,22 @@ const Home = () => {
                     <Input placeholder='Search' className='w-[650px] rounder-full'/>
                     <Button icon={<IconSearch/>} className='p-4 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center w-13 h-10 mb-4 ml-4'/>
                 </div>
-                <Button label='Create new Post' className='rounded bg-red-600 hover:bg-red-500 mb-4 ml-12 ' onClick={()=> navigate('/new-post')}/>
+                <Button label='Create new Post' className='rounded bg-red-600 hover:bg-red-500 mb-4 ml-12' onClick={()=> navigate('/new-post')}/>
             </div>
 
                 {/* POST Mapping */}
             {
-                postData?.map(({_id = '', caption = '', description = '', imageUrl = '', likes = [] .user = {}. likes = []}, index) => {
+                loading ?
+                <div className='flex flex-col h-full items-center justify-center'>
+                    <ClipLoader size={60}/>
+                </div> :
+                postData?.map(({_id = '', caption = '', description = '', imageUrl = '', likes = [], user: postUser = {}}, index) => {
                     const isAlreadyLiked = likes.length > 0 && likes.includes(user._id)
+                    console.log(user._id);
+                    
                     return(
                         <div className='bg-white w-[78%] mx-auto mt-32 p-8 rounded-md'>
-                            <div className='border-b flex items-center pb-4 mb-4 cursor-pointer' onClick={()=> email === user.email ? navigate('/profile') : navigate(`/user/${user?.email }`)}>
+                            <div className='border-b flex items-center pb-4 mb-4 cursor-pointer' onClick={()=> email === postUser.email ? navigate('/profile') : navigate(`/user/${postUser?.email }`)}>
                                 <div className='w-16 h-16 rounded-full border-2 border-gray-300 flex items-center justify-center'>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="50px" height="50px" color="#000000" fill="none">
                                         <path d="M6.57757 15.4816C5.1628 16.324 1.45336 18.0441 3.71266 20.1966C4.81631 21.248 6.04549 22 7.59087 22H16.4091C17.9545 22 19.1837 21.248 20.2873 20.1966C22.5466 18.0441 18.8372 16.324 17.4224 15.4816C14.1048 13.5061 9.89519 13.5061 6.57757 15.4816Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -135,8 +160,8 @@ const Home = () => {
                                     </svg>
                                 </div>
                                 <div className='ml-4'>
-                                    <h3 className='font-bold text-xl'>{user.username}</h3>
-                                    <p>{user.email}</p>
+                                    <h3 className='font-bold text-xl'>{postUser.username}</h3>
+                                    <p>{postUser.email}</p>
                                 </div>
                             </div>
                             <div className='border-b pb-4 mb-2'>
@@ -162,8 +187,6 @@ const Home = () => {
                     )
                 })
             }
-
-
         </div>
         <div className='w-[20%] bg-[#F2F5F8]'></div>
     </div>
