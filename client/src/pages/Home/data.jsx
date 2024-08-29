@@ -1,22 +1,4 @@
-import {IconUser, IconBookmark, IconMessageCircle, IconNews} from '@tabler/icons-react'
-
-export const data = [
-    {
-        id: 1,
-        name: 'Posts',
-        count: '1000'
-    },
-        {
-        id: 2,
-        name: 'Followers',
-        count: '1000'
-    },
-    {
-        id: 3,
-        name: 'Following',
-        count: '1000'
-    },
-]
+import {IconUser, IconBookmark, IconNews, IconSearch} from '@tabler/icons-react'
 
 export const links = [
     {
@@ -33,9 +15,9 @@ export const links = [
     },
     {
         id: 3,
-        name: 'Direct',
-        icon: <IconMessageCircle />,
-        url: '/'
+        name: 'Explore',
+        icon: <IconSearch />,
+        url: '/explore'
     },
     {
         id: 4,

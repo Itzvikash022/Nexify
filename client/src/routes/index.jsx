@@ -4,6 +4,9 @@ import { Navigate, Route, Routes as Router } from 'react-router-dom';
 import Profile from '../pages/Profile/index';
 import Others from '../pages/Others';
 import Home from '../pages/Home/Index';
+import EditProfile from '../pages/Profile/edit';
+import Explore from '../pages/explore';
+import Post from '../pages/Posts/main';
 
 const PrivateRoutes = ({children}) => {
   const isUserLoggedIn = window.localStorage.getItem('user:token') || false;
@@ -48,8 +51,23 @@ const Routes = () => {
     },
     { id: 6, 
       name: 'others', 
-      path: '/user/:email', 
+      path: '/user/:username', 
       element: <Others /> 
+    },
+    { id: 7, 
+      name: 'edit profile', 
+      path: '/edit-profile', 
+      element: <EditProfile /> 
+    },
+    { id: 8, 
+      name: 'explore', 
+      path: '/explore', 
+      element: <Explore /> 
+    },
+    { id: 9, 
+      name: 'post', 
+      path: '/post/:id', 
+      element: <Post /> 
     }
   ];
 

@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema({
   },
   token: {
     type: String,
+  },
+  profileImgUrl: {
+    type: String,
+    // default: "default_profile_image.jpg",
   }
 });
 
