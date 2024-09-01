@@ -26,6 +26,7 @@ import Follow from './models/follow.js'
 
 //import Middleware
 import auth from './middleware/auth.js';
+import Comments from './models/comment.js';
 
 //Registrations code
 app.post('/api/register', async (req, res) =>{
@@ -218,7 +219,7 @@ app.get('/api/post', async (req, res) => {
 app.get('/api/feed', auth, async (req, res) => {
     try {
         const { user } = req;
-        const posts = await Posts.find().populate('user','_id username email profileImgUrl').sort({ createdAt : -1 })
+        const posts = await Posts.find().populate('user','_id username email profileImgUrl commentCount').sort({ createdAt : -1 })
         res.status(200).json({ posts, user })
                 
     } catch (error) {
@@ -411,7 +412,7 @@ app.get('/api/search-users', auth, async (req, res) => {
   
       const users = await Users.find({ 
         username: { $regex: username, $options: 'i' } // Case-insensitive search
-      }).select('username _id profileImgUrl');
+      }).select('username _id profileImgUrl followers');
   
       res.json(users);
     } catch (error) {
@@ -419,7 +420,53 @@ app.get('/api/search-users', auth, async (req, res) => {
     }
   });
 
-  
+// Add Comments
+app.post('/api/comment', async (req, res) => {
+    const { postId, userId, commentText } = req.body;
+    console.log('Received data:', { postId, userId, commentText });
+
+    try {
+        // Create a new comment
+        const newComment = new Comments({
+            post: postId,
+            user: userId,
+            comment: commentText
+        });
+
+        // Save the new comment
+        await newComment.save();
+
+        // Update the comments count in the corresponding post
+        const updatedPost = await Posts.findByIdAndUpdate(
+            postId,
+            { $inc: { commentCount: 1 } }, // Increment the comments count by 1
+            { new: true } // Return the updated document
+        );
+
+        // Return success response
+        res.status(200).json({ success: true, comment: newComment, post: updatedPost });
+    } catch (err) {
+        console.error('Error adding comment:', err);
+        res.status(500).json({ success: false, message: 'Failed to add comment' });
+    }
+});
+
+
+// Display Comments
+app.get('/api/comments/:postId', async (req, res) => {
+    console.log('Fetching comments for postId:', req.params.postId);
+    try {
+        const comments = await Comments.find({ post: req.params.postId })
+            .populate('user', 'username profileImgUrl');
+        res.status(200).json({ success: true, comments });
+    } catch (err) {
+        console.error('Error fetching comments:', err);
+        res.status(500).json({ success: false, message: 'Failed to fetch comments' });
+    }
+});
+
+
+
 const PORT = process.env.PORT || 8000;
 
 app.listen(8000, () =>{

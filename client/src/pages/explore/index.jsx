@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/sidebar';
 import { links } from '../Home/data';
 import { useNavigate } from 'react-router-dom';
+import defaultImg from '../../assets/default.jpg'
 import bg_img from "../../assets/create_post_bg.jpg";
 
 const Explore = () => {
@@ -108,7 +109,7 @@ const Explore = () => {
                 onClick={() => handleUserClick(user.username)}
               >
                 <img
-                  src={user.profileImgUrl || 'default-profile.png'} // Fallback image
+                  src={user.profileImgUrl || defaultImg}
                   alt={`${user.username}'s profile`}
                   className="w-14 h-14 rounded-full object-cover mr-4"
                 />

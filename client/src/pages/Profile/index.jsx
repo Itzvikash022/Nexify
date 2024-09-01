@@ -30,7 +30,6 @@ const Profile = () => {
     getPosts();
   }, []);
 
-  const postCount = postData.length;
   const {
     _id = "",
     username = "",
@@ -140,6 +139,7 @@ const Profile = () => {
                       caption = "",
                       description = "",
                       imageUrl = "",
+                      commentCount = "",
                       likes = [],
                     },
                     index
@@ -191,7 +191,7 @@ const Profile = () => {
                               cursor="pointer"
                               onClick={() => navigate(`/post/${_id}`)}
                             />
-                            <span>10.5K Comments</span>
+                            <span>{commentCount} Comments</span>
                           </div>
                         </div>
                       </div>

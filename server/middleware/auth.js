@@ -12,24 +12,24 @@ const auth = async (req, res, next) => {
 
         const [bearer, token] = authHeader.split(' ');
         if (bearer !== 'Bearer' || !token) {
-            return res.status(401).send('Invalid Token');
+            return res.status(401).json('Invalid Token');
         }
 
         const verifyToken = jwt.verify(token, 'hehe_a_random_secret_key_lol_so_secure_no_one_can_guess_it');
         const user = await Users.findOne({ _id: verifyToken.id });
 
         if (!user) {
-            return res.status(401).send('User not found');
+            return res.status(401).json('User not found');
         }
 
         req.user = user;
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
-            return res.status(401).send('Token expired');
+            return res.status(401).json('Token expired');
         }
         console.error('Error in auth middleware:', error.message);
-        return res.status(500).send(`Error: ${error.message}`);
+        return res.status(500).json(`Error: ${error.message}`);
     }
 };
 

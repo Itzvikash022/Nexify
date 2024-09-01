@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BarLoader } from 'react-spinners';
 import { useNavigate } from 'react-router-dom';
+import defaultImg from '../../assets/default.jpg';
 
 const Sidebar = ({ loading, username, email, followers, following, links, handleLogout, className, btn_class, profileImgUrl }) => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const Sidebar = ({ loading, username, email, followers, following, links, handle
           <BarLoader size={10} color="#000000" /> : 
           <div className='flex flex-col items-center'>
             <div className='flex justify-center flex-col items-center w-[100px] h-[100px] rounded-full border-2 border-gray-200 overflow-hidden'>
-              <img src={profileImgUrl} alt="Failed to load image" className='w-full h-full object-cover' />
+              <img src={profileImgUrl || defaultImg} alt="Failed to load image" className='w-full h-full object-cover' />
             </div>
             <p className='mt-4 text-center font-poppins text-xl'>@{username}</p>
             <p className='mb-4 text-center text-[18px] hover:underline cursor-pointer'onClick={() => navigate('/profile')}>{email}</p>

@@ -180,7 +180,7 @@ const Form = ({
                     htmlFor="image"
                     className="cursor-pointer p-4 border shadow-sm rounded-md bg-slate-100 hover:bg-gray-200 text-center block"
                   >
-                    {data?.img?.name || 'Upload Post'}
+                    {data?.img?.name || 'Profile Picture'}
                   </label>
                 </div>
 

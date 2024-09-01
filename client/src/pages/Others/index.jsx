@@ -6,6 +6,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import BarLoader from "react-spinners/BarLoader";
 import { links } from "../Home/data";
 import { Link, useNavigate } from "react-router-dom";
+import defaultImg from '../../assets/default.jpg'
 import Sidebar from "../../components/sidebar";
 
 const Others = () => {
@@ -184,7 +185,7 @@ const Others = () => {
               <>
                 <div className="flex justify-center flex-col items-center w-[150px] h-[150px] rounded-full border-2 border-gray-200 overflow-hidden">
                   <img
-                    src={user?.profileImgUrl}
+                    src={user?.profileImgUrl || defaultImg}
                     alt="Failed to load image"
                     className="w-full h-full object-cover"
                   />
@@ -245,6 +246,7 @@ const Others = () => {
                         caption = "",
                         description = "",
                         imageUrl = "",
+                        commentCount = "",
                         likes = [],
                       },
                       index
@@ -294,7 +296,7 @@ const Others = () => {
                                   cursor="pointer"
                                   onClick={() => navigate(`/post/${_id}`)}
                                 />
-                                <span>10.5K Comments</span>
+                                <span>{commentCount} Comments</span>
                               </div>
                             </div>
                           </div>
