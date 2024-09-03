@@ -195,6 +195,47 @@ app.get('/api/others', auth, async (req, res) => {
 });
 
 
+//Followers Count
+app.post('/api/followerCount', auth, async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ error: "User ID is required" });
+        }
+        const followers = await Follow.find({ followed: userId });
+
+        if (followers.length === 0) {
+            res.status(200).json({ followers: 0 });
+        } else {
+            res.status(200).json({ followers: followers.length });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+//Following Count
+app.post('/api/followingCount', auth, async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ error: "User ID is required" });
+        }
+
+        const following = await Follow.find({ follower: userId });
+
+        if (following.length === 0) {
+            res.status(200).json({ following: 0 });
+        } else {
+            res.status(200).json({ following: following.length });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Single Posts
 app.get('/api/post', async (req, res) => {
     try {
@@ -213,6 +254,34 @@ app.get('/api/post', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// Delete Post
+app.delete('/api/delete-post', async (req, res) => {
+    try {
+        const { id } = req.query;
+        if (!id) {
+            return res.status(400).json({ error: 'Post ID is required' });
+        }
+        
+        // Find and delete the post by ID
+        const post = await Posts.findOneAndDelete({ _id: id });
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        // Delete all comments associated with this post
+        const deletedComments = await Comments.deleteMany({ post: id });
+
+        // Respond with success and include the number of deleted comments
+        res.status(200).json({ 
+            message: 'Post and associated comments deleted successfully', 
+            deletedCommentsCount: deletedComments.deletedCount 
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 
 //Homepage
@@ -254,11 +323,6 @@ app.post('/api/follow', auth, async (req, res)=>{
         })
 
         await FollowUser.save()
-
-        // Update follower and following counts
-        await Users.findByIdAndUpdate(user._id, { $inc: { following: 1 } });
-        await Users.findByIdAndUpdate(id, { $inc: { followers: 1 } });
-
         res.status(200).json({ isFollowed: true })
         
     } catch (error) {
@@ -274,10 +338,6 @@ app.delete('/api/unfollow', auth, async (req, res)=>{
         if(!id) return res.status(404).send('id is empty')
         
         await Follow.deleteOne({ follower: user._id, followed: id})
-
-        // Decrement counts
-        await Users.findByIdAndUpdate(user._id, { $inc: { following: -1 } });
-        await Users.findByIdAndUpdate(id, { $inc: { followers: -1 } });
 
         res.status(200).json({ isFollowed: false })
         
@@ -465,7 +525,72 @@ app.get('/api/comments/:postId', async (req, res) => {
     }
 });
 
+app.delete('/api/delete-account', auth, async (req, res) => {
+    try {
+        const userId = req.user._id; // Extract the user ID from the authenticated user
+    
+        // Find all posts by the user
+        const userPosts = await Posts.find({ user: userId });
+    
+        // Collect all post IDs for later use
+        const postIds = userPosts.map(post => post._id);
+    
+        // Find all comments associated with these posts
+        const commentsToDelete = await Comments.find({ post: { $in: postIds } });
+    
+        // Delete all comments associated with the user's posts
+        await Promise.all(commentsToDelete.map(comment =>
+            Comments.findByIdAndDelete(comment._id)
+        ));
+    
+        // Delete all posts by the user
+        await Promise.all(userPosts.map(post =>
+            Posts.findByIdAndDelete(post._id)
+        ));
+    
+        // Find all posts liked by the user
+        const postsWithLikes = await Posts.find({ likes: userId });
+    
+        // Update each post to remove the user's ID from the likes array
+        await Promise.all(postsWithLikes.map(post =>
+            Posts.updateOne(
+                { _id: post._id },
+                { $pull: { likes: userId } }
+            )
+        ));
+    
+        // Find all comments left by the user
+        const userComments = await Comments.find({ user: userId });
+    
+        // Delete all comments left by the user
+        await Promise.all(userComments.map(comment =>
+            Comments.findByIdAndDelete(comment._id)
+        ));
+    
+        // Decrement comment count in each post where the user has left a comment
+        await Promise.all(userComments.map(async (comment) => {
+            await Posts.findByIdAndUpdate(
+                comment.post, // Reference to the post where the comment was left
+                { $inc: { commentCount: -1 } }
+            );
+        }));
+    
+        // Step 1: Remove the user from other users' followers
+        await Follow.deleteMany({ followed: userId });
 
+        // Step 2: Remove other users from the user's following list
+        await Follow.deleteMany({ follower: userId });
+
+        // Delete the user account
+        await Users.findByIdAndDelete(userId);
+    
+        res.status(200).json({ message: 'Account, posts, comments, and follow relationships deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting account, posts, comments, and follow relationships:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+    
+});
 
 const PORT = process.env.PORT || 8000;
 

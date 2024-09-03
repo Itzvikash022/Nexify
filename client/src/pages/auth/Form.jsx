@@ -5,12 +5,11 @@ import { useNavigate } from "react-router-dom";
 import bg_img from "../../assets/login_background.jpg";
 import login_side from "../../assets/login_side.jpeg";
 import ClipLoader from "react-spinners/ClipLoader";
+import Modal from "../../components/modal/Modal"; // Import the custom modal component
 
 const Form = ({
-  // isSignInPage = true
   isSignInPage = window.location.pathname.includes("signin"),
 }) => {
-  // const [isSignInPage, setisSignInPage] = useState(true)
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState({
@@ -21,19 +20,18 @@ const Form = ({
     img: null,
   });
   const [url, setUrl] = useState("");
-  
+  const [modalMessage, setModalMessage] = useState("");
+  const [showModal, setShowModal] = useState(false);
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-
-    // Validate file type
     if (file && !file.type.startsWith("image/")) {
-        alert("Please select a valid image file.");
-        return;
+      setModalMessage("Please select a valid image file.");
+      setShowModal(true);
+      return;
     }
-
     setData({ ...data, img: file });
-};
-  console.log(data);
+  };
 
   const uploadImage = async () => {
     const formData = new FormData();
@@ -50,36 +48,26 @@ const Form = ({
     );
 
     if (res.ok) {
-      console.log("Upload successful");
       const responseJson = await res.json();
       return responseJson.secure_url;
     } else {
-      console.error("Failed to upload image");
       return "error";
     }
   };
-  let secure_url = null;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log(JSON.stringify(data));
-    
-    if(!isSignInPage){
+
+    let secure_url = null;
+    if (!isSignInPage) {
       secure_url = await uploadImage();
-      
-        if (secure_url === "error" || !secure_url) {
-            console.error("Failed to retrieve secure URL");
-            setLoading(false); // Stop loading if there is an error
-            alert("Failed to create Post : Image not found"); // Inform the user about the issue
-            return;
-        }
-        
-        if (secure_url) {
-            setUrl(secure_url);
-            // console.log('URL after setUrl:', secure_url);
-        } else {
-            console.error("Failed to retrieve secure URL");
-        }
+      if (secure_url === "error" || !secure_url) {
+        setModalMessage("Failed to create Post: Image not found");
+        setLoading(false);
+        setShowModal(true);
+        return;
+      }
     }
 
     const res = await fetch(
@@ -89,7 +77,6 @@ const Form = ({
         headers: {
           "Content-Type": "application/json",
         },
-        
         body: JSON.stringify(
           isSignInPage
             ? {
@@ -107,59 +94,49 @@ const Form = ({
       }
     );
 
-    console.log(res, "res");
+    setLoading(false);
 
-    if (isSignInPage) {
-      // Login handling
-      if (res.status === 201) {
+    if (res.status === 201) {
+      if (isSignInPage) {
         const { token, user } = await res.json();
-        console.log(token, user, "response");
         localStorage.setItem("user:token", token);
         navigate("/");
-      } else if (res.status === 401) {
-        const errorText = await res.text();
-        setLoading(false)
-        alert(errorText || "Invalid Credentials");
       } else {
-        setLoading(false);
-        alert("Some error occurred... Please try again later");
-      }
-    } else {
-      // Registration handling
-      if (res.status === 201) {
-        setLoading(false);
         navigate("/ac/signin");
-      } else if (res.status === 400) {
-        setLoading(false);
-        const errorText = await res.text();
-        alert(errorText || "User already exists");
-      } else {
-        setLoading(false);
-        alert("Registration failed. Please try again later");
       }
+    } else if (res.status === 401 || res.status === 400) {
+      const errorText = await res.text();
+      setModalMessage(errorText || "Invalid Credentials");
+      setShowModal(true);
+    } else {
+      setModalMessage("Some error occurred... Please try again later");
+      setShowModal(true);
     }
-
-    
   };
+
   return (
     <div
-      className="bg-slate-100 bg-center bg-cover h-screen w-full flex justify-center items-center"
+      className="bg-slate-100 bg-center bg-cover min-h-screen w-full flex justify-center items-center"
       style={{ backgroundImage: `url(${bg_img})` }}
     >
-      <div className="h-[770px] w-[1500px] rounded-xl opacity-90 bg-white flex justify-center items-center shadow-xl box-border ">
+      <div className="h-auto max-w-screen-xl w-full md:h-[770px] rounded-xl opacity-90 bg-white flex flex-col md:flex-row justify-center items-center shadow-xl box-border p-5 md:p-0">
         {loading ? (
           <ClipLoader size={55} />
         ) : (
           <>
             <div
-              className={`h-full w-full flex flex-col justify-center items-center  ${
+              className={`w-full md:w-1/2 flex flex-col justify-center items-center ${
                 !isSignInPage && "order-2"
               }`}
             >
-              <div className="text-[50px] font-serif font-bold">Welcome</div>
-              <div className="font-semibold text-[18px]">Please {isSignInPage ? "Login" : "Sign Up"} to continue...!</div>
+              <div className="text-[36px] md:text-[50px] font-serif font-bold">
+                Welcome
+              </div>
+              <div className="font-semibold text-[16px] md:text-[18px] text-center">
+                Please {isSignInPage ? "Login" : "Sign Up"} to continue...!
+              </div>
               <form
-                className="w-[350px]"
+                className="w-full max-w-[350px]"
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSubmit(e);
@@ -167,24 +144,22 @@ const Form = ({
               >
                 {!isSignInPage && (
                   <>
-                <div className="mb-4">
-                  <Input
-                    type="file"
-                    id="image"
-                    name="Profile Picture"
-                    className="hidden"
-                    onChange={handleImageChange}
-                    required={false}
-                  />
-                  <label
-                    htmlFor="image"
-                    className="cursor-pointer p-4 border shadow-sm rounded-md bg-slate-100 hover:bg-gray-200 text-center block"
-                  >
-                    {data?.img?.name || 'Profile Picture'}
-                  </label>
-                </div>
-
-
+                    <div className="mb-4">
+                      <Input
+                        type="file"
+                        id="image"
+                        name="Profile Picture"
+                        className="hidden"
+                        onChange={handleImageChange}
+                        required={false}
+                      />
+                      <label
+                        htmlFor="image"
+                        className="cursor-pointer p-4 border shadow-sm rounded-md bg-slate-100 hover:bg-gray-200 text-center block"
+                      >
+                        {data?.img?.name || 'Profile Picture'}
+                      </label>
+                    </div>
 
                     <Input
                       label="Username"
@@ -211,7 +186,9 @@ const Form = ({
                   type="email"
                   placeholder="Enter your email"
                   value={data.email}
-                  onChange={(e) => setData({ ...data, email: e.target.value })}
+                  onChange={(e) =>
+                    setData({ ...data, email: e.target.value })
+                  }
                 />
                 <Input
                   label="Password"
@@ -222,7 +199,10 @@ const Form = ({
                     setData({ ...data, password: e.target.value })
                   }
                 />
-                <Button label={isSignInPage ? "Login" : "SignUp"} className="w-full mt-[13px] h-[44px]"/>
+                <Button
+                  label={isSignInPage ? "Login" : "Sign Up"}
+                  className="w-full mt-[13px] h-[44px]"
+                />
               </form>
               <div
                 className="cursor-pointer font-semibold mt-[10px] text-[16px] hover:underline"
@@ -232,18 +212,16 @@ const Form = ({
               >
                 {isSignInPage
                   ? "Create New Account"
-                  : "Already a existing user? Signin here"}
+                  : "Already an existing user? Sign in here"}
               </div>
             </div>
             <div
-              className={`bg-gray-200 h-full w-full ${
+              className={`h-[250px] md:h-full w-full md:w-1/2 ${
                 !isSignInPage && "order-1"
               }`}
             >
               <div
-                className={`h-full w-[750px] bg-gray-200 ${
-                  !isSignInPage ? "order-1" : "order-2"
-                }`}
+                className="h-full w-full bg-gray-200"
                 style={{
                   backgroundImage: `url(${login_side})`,
                   backgroundSize: "cover",
@@ -254,6 +232,12 @@ const Form = ({
           </>
         )}
       </div>
+      {showModal && (
+        <Modal
+          message={modalMessage}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 };

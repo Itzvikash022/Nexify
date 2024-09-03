@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import ClipLoader from "react-spinners/ClipLoader";
 import { links } from '../Home/data';
 import Sidebar from '../../components/sidebar';
-import bg_img from "../../assets/create_post_bg.jpg";
+import bg_img from "../../assets/login_background.jpg";
 
 const CreatePost = () => {
     const [data, setData] = useState({
@@ -203,12 +203,19 @@ const CreatePost = () => {
                         </form>
                         <Button label="Cancel" className='mt-[80px] w-[120px]' onClick={() => navigate('/')}/>
                     </>
-                }
+            }
             </div>
+            {
+                loading ? 
+                <div className="flex items-center justify-center h-full ml-[150px]">
+                <ClipLoader size={50} />
+            </div> :
             <div className='h-[600px] w-[400px] flex flex-col items-center justify-center ml-[10px]'>
+                
                 <p className='font-bold'>Post Preview</p>
                 {previewUrl && <img src={previewUrl} alt="Preview" className='p-2 border mt-4 max-h-[600px] max-w-[400px] object-cover bg-white rounded-md' /> || 'No Post Available'}
             </div>
+            }
         </div>
         </div>
     );

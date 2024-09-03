@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/sidebar';
 import { links } from '../Home/data';
 import { useNavigate } from 'react-router-dom';
-import defaultImg from '../../assets/default.jpg'
-import bg_img from "../../assets/create_post_bg.jpg";
+import defaultImg from '../../assets/default.jpg';
+import bg_img from "../../assets/login_background.jpg";
 
 const Explore = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState({});
+  const [followerCounts, setFollowerCounts] = useState({}); // State to store follower counts
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,7 +23,10 @@ const Explore = () => {
           },
         })
           .then((res) => res.json())
-          .then((data) => setResults(data))
+          .then((data) => {
+            setResults(data);
+            fetchFollowerCounts(data); // Fetch follower counts for search results
+          })
           .catch((error) => console.error('Error fetching users:', error));
       }, 300); // Debounce delay
 
@@ -33,42 +36,26 @@ const Explore = () => {
     }
   }, [query]);
 
-  useEffect(() => {
-    const getUsers = async () => {
-      setLoading(true);
-      const response = await fetch("http://localhost:8000/api/user", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("user:token")}`,
-        },
-      });
-      const userData = await response.json();
-      setUser(userData.user);
-      setLoading(false);
-    };
-    getUsers();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      const response = await fetch("http://localhost:8000/api/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("user:token")}`,
-        },
-      });
-
-      if (response.ok) {
-        localStorage.removeItem("user:token");
-        navigate("/ac/signin");
-      } else {
-        console.error("Logout failed");
+  // Function to fetch follower counts for each user
+  const fetchFollowerCounts = async (users) => {
+    const counts = {};
+    for (let user of users) {
+      try {
+        const response = await fetch("http://localhost:8000/api/followerCount", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("user:token")}`,
+          },
+          body: JSON.stringify({ userId: user._id }), // Send userId in the request body
+        });
+        const followerData = await response.json();
+        counts[user._id] = followerData.followers; // Store follower count with user ID as key
+      } catch (error) {
+        console.error("Failed to fetch follower count for user:", user.username, error);
       }
-    } catch (error) {
-      console.error("Logout error:", error);
     }
+    setFollowerCounts(counts); // Update state with all fetched follower counts
   };
 
   const handleUserClick = (username) => {
@@ -79,15 +66,8 @@ const Explore = () => {
     <div className='flex'>
       <Sidebar
         className={'w-[20%] bg-white fixed h-screen overflow-y-auto'}
-        loading={loading}
-        username={user.username}
-        email={user.email}
-        followers={user.followers}
-        following={user.following}
         links={links}
-        handleLogout={handleLogout}
         btn_class={'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[170px]'}
-        profileImgUrl={user.profileImgUrl}
       />
 
       <div className='flex flex-col items-center h-screen ml-[20%] w-[80%] p-4 bg-cover bg-no-repeat bg-center' style={{ 
@@ -115,7 +95,9 @@ const Explore = () => {
                 />
                 <div className="ml-4">
                   <div className="text-xl font-semibold">@{user.username}</div>
-                  <div className="text-md text-gray-600 mt-1">Followers: {user.followers}</div>
+                  <div className="text-md text-gray-600 mt-1">
+                    Followers: {followerCounts[user._id]}
+                  </div>
                 </div>
               </div>
             ))

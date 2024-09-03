@@ -8,6 +8,7 @@ import { links } from "../Home/data";
 import { Link, useNavigate } from "react-router-dom";
 import defaultImg from '../../assets/default.jpg'
 import Sidebar from "../../components/sidebar";
+import bg_img from "../../assets/login_background.jpg";
 
 const Others = () => {
   const { username } = useParams();
@@ -17,6 +18,8 @@ const Others = () => {
   const [LoggedUser, setLoggedUser] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [followerCount, setFollowerCount] = useState(null);
+  const [followingCount, setFollowingCount] = useState(null);
 
   useEffect(() => {
     const getPosts = async () => {
@@ -40,9 +43,60 @@ const Others = () => {
     };
     getPosts();
   }, [username]);
-  // console.log(LoggedUser._id, "follower");
 
   const postCount = postData.length;
+
+  useEffect(() => {
+    const getFollowersCount = async () => {
+      if (!user.id) return;
+
+      try {
+        const response = await fetch("http://localhost:8000/api/followerCount", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("user:token")}`,
+          },
+          body: JSON.stringify({ userId: user.id }),
+        });
+
+        const followerCount = await response.json();
+        setFollowerCount(followerCount.followers);
+      } catch (error) {
+        console.error("Failed to fetch follower count:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getFollowersCount();
+  }, [user.id]);
+
+  useEffect(() => {
+    const getFollowingCount = async () => {
+      if (!user.id) return;
+
+      try {
+        const response = await fetch("http://localhost:8000/api/followingCount", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("user:token")}`,
+          },
+          body: JSON.stringify({ userId: user.id }),
+        });
+
+        const followingCount = await response.json();
+        setFollowingCount(followingCount.following);
+      } catch (error) {
+        console.error("Failed to fetch following count:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getFollowingCount();
+  }, [user.id]);
 
   const handleFollow = async () => {
     setLoading(true);
@@ -65,6 +119,7 @@ const Others = () => {
       following: prevLoggedUser.following + 1
     }));
     setLoading(false);
+    window.location.reload();
   };
 
   const handleUnfollow = async () => {
@@ -88,6 +143,7 @@ const Others = () => {
       following: prevLoggedUser.following - 1
     }));
     setLoading(false);
+    window.location.reload();
   };
 
   const handleLike = async (_id, index) => {
@@ -104,7 +160,6 @@ const Others = () => {
       if (i === index) return updatedPost;
       else return post;
     });
-    // postData[index] = updatedPost
     setData(updatePost);
   };
 
@@ -122,31 +177,7 @@ const Others = () => {
       if (i === index) return updatedPost;
       else return post;
     });
-    // postData[index] = updatedPost
     setData(updatePost);
-  };
-
-  const handleLogout = async () => {
-    try {
-      const response = await fetch("http://localhost:8000/api/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("user:token")}`,
-        },
-      });
-
-      if (response.ok) {
-        // Clear token from local storage
-        localStorage.removeItem("user:token");
-        // Redirect to login or home page
-        navigate("/ac/signin");
-      } else {
-        console.error("Logout failed");
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
   };
 
   const truncateText = (text, maxLength) => {
@@ -160,33 +191,25 @@ const Others = () => {
     <>
       <div className="flex">
         <Sidebar
-          className={"w-[20%] bg-white fixed h-screen overflow-y-auto"}
-          loading={loading}
-          username={LoggedUser.username}
-          email={LoggedUser.email}
-          followers={LoggedUser.followers}
-          following={LoggedUser.following}
+          className="w-[20%] bg-white fixed h-screen overflow-y-auto"
           links={links}
-          handleLogout={handleLogout}
-          btn_class={
-            "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[170px]"
-          }
-          profileImgUrl={LoggedUser.profileImgUrl}
+          btn_class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[170px]"
         />
 
-        <div className="flex flex-col items-center flex-1 ml-[20%] overflow-y-auto p-6">
+        <div className="flex flex-col items-center flex-1 ml-[20%] overflow-y-auto p-6" style={{ 
+            backgroundImage: `url(${bg_img})`}}>
           {/* Profile Header */}
-          <div className="flex flex-col items-center border w-full p-4">
+          <div className="flex flex-col items-center border w-full p-4 bg-white shadow-lg rounded-lg">
             {loading ? (
               <div className="h-[317px] flex items-center justify-center">
                 <BarLoader />
               </div>
             ) : (
               <>
-                <div className="flex justify-center flex-col items-center w-[150px] h-[150px] rounded-full border-2 border-gray-200 overflow-hidden">
+                <div className="flex justify-center items-center w-[150px] h-[150px] rounded-full border-2 border-gray-200 overflow-hidden">
                   <img
                     src={user?.profileImgUrl || defaultImg}
-                    alt="Failed to load image"
+                    alt="Profile"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -195,122 +218,85 @@ const Others = () => {
                   {user?.username}
                 </p>
                 <p className="mb-4 text-center text-xl">{user?.email}</p>
-                <div className="text-lg flex justify-around w-[600px] text-center mb-6">
-                  <div className="flex flex-col justify-around items-center">
+                <div className="text-lg flex justify-around w-full md:w-[600px] text-center mb-6">
+                  <div className="flex flex-col justify-center items-center">
                     <h4 className="font-bold text-xl">{postCount}</h4>
                     <p className="text-lg font-bold">Posts</p>
                   </div>
-                  <div className="flex flex-col justify-around items-center">
-                    <h4 className="font-bold text-xl">{user?.followers}</h4>
+                  <div className="flex flex-col justify-center items-center">
+                    <h4 className="font-bold text-xl">{followerCount}</h4>
                     <p className="text-lg font-bold">Followers</p>
                   </div>
-                  <div className="flex flex-col justify-around items-center">
-                    <h4 className="font-bold text-xl">{user?.following}</h4>
+                  <div className="flex flex-col justify-center items-center">
+                    <h4 className="font-bold text-xl">{followingCount}</h4>
                     <p className="text-lg font-bold">Following</p>
                   </div>
                 </div>
               </>
             )}
             <div>
-              {!isFollowed ? (
-                <Button
-                  label="Follow"
-                  disabled={loading}
-                  onClick={() => handleFollow()}
-                  className="w-[200px] bg-green-600 hover:bg-green-400 my-6"
-                />
-              ) : (
-                <Button
-                  label="Unfollow"
-                  disabled={loading}
-                  onClick={() => handleUnfollow()}
-                  className="w-[200px] bg-red-600 hover:bg-red-500 my-6"
-                />
-              )}
+              {
+                user?.username !== LoggedUser.username &&
+                (!isFollowed ? (
+                  <Button
+                    label="Follow"
+                    disabled={loading}
+                    onClick={handleFollow}
+                    className="w-[200px] bg-green-600 hover:bg-green-400 my-6"
+                  />
+                ) : (
+                  <Button
+                    label="Unfollow"
+                    disabled={loading}
+                    onClick={handleUnfollow}
+                    className="w-[200px] bg-red-600 hover:bg-red-400 my-6"
+                  />
+                ))
+              }
             </div>
           </div>
 
-          {/* Grid for Posts */}
-          <div className="flex justify-center w-full">
-            {loading ? (
-              <div className="pt-[80px]">
-                <ClipLoader size={75} />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[50px] p-6 border mt-6 w-[1500px]">
-                {postData.length > 0 ? (
-                  postData.map(
-                    (
-                      {
-                        _id,
-                        caption = "",
-                        description = "",
-                        imageUrl = "",
-                        commentCount = "",
-                        likes = [],
-                      },
-                      index
-                    ) => {
-                      const isAlreadyLiked =
-                        likes.length > 0 && likes.includes(LoggedUser._id);
-
-                      return (
-                        <div
-                            key={_id}
-                            className="w-full flex flex-col p-6 border bg-gray-100 rounded-lg max-h-[600px] flex-1"
-                          >
-                            <div className="flex-1">
-                              <div className="pb-4 mb-2">
-                                <img
-                                  src={imageUrl}
-                                  alt="Failed to load image"
-                                  className="w-full rounded-lg shadow max-h-[400px] cursor-pointer"
-                                  onClick={() => navigate(`/post/${_id}`)}
-                                />
-                              </div>
-                            </div>
-                              <div className="pb-2">
-                                <h3 className="font-bold border-b">{caption}</h3>
-                                <p className="break-words">{truncateText(description, 100)}</p>
-                              </div>
-                            <div className="flex justify-evenly font-bold mt-auto">
-                              <div className="flex items-center">
-                                <IconHeart
-                                  size={24}
-                                  className="mr-2"
-                                  color={isAlreadyLiked ? "red" : "black"}
-                                  fill={isAlreadyLiked ? "red" : "white"}
-                                  cursor="pointer"
-                                  onClick={() =>
-                                    isAlreadyLiked
-                                      ? handleUnlike(_id, index)
-                                      : handleLike(_id, index)
-                                  }
-                                />
-                                <span>{likes.length} Likes</span>
-                              </div>
-                              <div className="flex items-center">
-                                <IconMessage
-                                  size={24}
-                                  className="mr-2"
-                                  cursor="pointer"
-                                  onClick={() => navigate(`/post/${_id}`)}
-                                />
-                                <span>{commentCount} Comments</span>
-                              </div>
-                            </div>
-                          </div>
-
-                      );
-                    }
-                  )
-                ) : (
-                  <div className="col-span-3 text-center text-xl font-semibold text-gray-500">
-                    No posts available
+          {/* Posts */}
+          <div className="mt-6 w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[30px]">
+            {postData.map((post, index) => (
+              <div
+                key={post._id}
+                className="flex flex-col border bg-white shadow-md rounded-lg p-4"
+              >
+                <div className="relative">
+                  <img
+                    src={post.imageUrl}
+                    alt="Post"
+                    className="w-full h-[300px] object-cover rounded-md"
+                  />
+                  
+                </div>
+                  <p className="font-semibold border-t mt-2 p-2">{post.caption}</p>
+                <div className="mt-4 flex  justify-around items-center">
+                  <div className="flex items-center">
+                    {post?.likes?.includes(LoggedUser?._id) ? (
+                      <IconHeart
+                        size={24}
+                        className="text-red-500 fill-red-500 cursor-pointer"
+                        onClick={() => handleUnlike(post._id, index)}
+                      />
+                    ) : (
+                      <IconHeart
+                        size={24}
+                        className="text-black-500  cursor-pointer"
+                        onClick={() => handleLike(post._id, index)}
+                      />
+                    )}
+                    <span className="ml-2">{post.likes.length}</span>
                   </div>
-                )}
+                  <div className="flex items-center">
+                    <IconMessage size={24} className="text-gray-500" />
+                    <span className="ml-2">{post.commentCount}</span>
+                  </div>
+                  
+                </div>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
