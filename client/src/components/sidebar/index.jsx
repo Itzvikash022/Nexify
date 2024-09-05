@@ -165,10 +165,10 @@ const Sidebar = ({ links, className, btn_class }) => {
       </div>
       <div className="h-[15%] flex justify-center items-center p-4">
         <button
-          className={`${btn_class} w-full py-2 bg-white text-purple-700 font-semibold rounded-lg shadow-md transition-all hover:bg-purple-700 hover:text-white hover:shadow-lg`}
+          className={`${btn_class} w-full h-[45px] py-2 bg-purple-700 font-semibold rounded-lg shadow-md transition-all hover:bg-purple-400 hover:text-white hover:shadow-lg`}
           onClick={handleLogout}
         >
-          Log Out
+          <p className='font-bold text-md'>Log Out</p>
         </button>
       </div>
 

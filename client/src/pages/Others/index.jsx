@@ -287,11 +287,11 @@ const Others = () => {
                         onClick={() => handleLike(post._id, index)}
                       />
                     )}
-                    <span className="ml-2">{post.likes.length}</span>
+                    <span className="ml-2">{post.likes.length} Likes</span>
                   </div>
                   <div className="flex items-center">
                     <IconMessage size={24} className="text-gray-500" />
-                    <span className="ml-2">{post.commentCount}</span>
+                    <span className="ml-2">{post.commentCount} Comments</span>
                   </div>
                   
                 </div>

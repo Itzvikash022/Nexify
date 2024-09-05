@@ -122,11 +122,11 @@ const Home = () => {
 
             {/* Main Content */}
             <div className='w-[60%] overflow-y-auto h-full scrollbar-hide'>
-                <div className='bg-gradient-to-b from-purple-400 to-purple-400 text-white h-16 flex items-center px-6 sticky  shadow-md'>
+                <div className='bg-gradient-to-b from-purple-400 to-purple-400 text-white h-16 flex items-center top-0 z-10 px-6 sticky shadow-md'>
                     <div className='text-xl md:text-2xl font-bold'>
                         Nexify
                     </div>
-                    <Button label='Create new Post' className='ml-auto rounded bg-white text-blue-700 hover:bg-gray-200 px-4 py-2 font-semibold' onClick={() => navigate('/new-post')} />
+                    <Button label='Create new Post' className='ml-auto rounded text-blue-700 hover:bg-blue-400 px-4 py-2 font-semibold' onClick={() => navigate('/new-post')} />
                 </div>
 
                 {/* POST Mapping */}
