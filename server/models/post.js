@@ -9,6 +9,10 @@
       type: String,
       required: true,
     },
+    location: {
+      type: String,
+      required: false,
+    },
     imageUrl: {
       type: String,
       required: true,

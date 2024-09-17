@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import defaultImg from "../../assets/default.jpg";
@@ -10,11 +10,14 @@ import {
   IconCompass,
   IconUser,
   IconLogout,
+  IconMenu,
   IconLayoutGrid,
+
 } from "@tabler/icons-react";
+import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import ClipLoader from "react-spinners/ClipLoader";
 
-const Sidebar = () => {
+const Sidebar2 = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState({});
   const [loading, setLoading] = useState(true);
@@ -130,102 +133,117 @@ const Sidebar = () => {
       console.error("Logout error:", error);
     }
   };
-
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
   return (
-    <aside className="fixed inset-y-0 left-0 z-10 hidden w-72 flex-col border-r bg-background shadow-lg sm:flex">
-      <div className="flex h-16 items-center justify-between border-b px-4">
-        <Link
-          href="#"
-          className="flex items-center gap-2 font-bold"
-          prefetch={false}
-        >
-          <IconBrandInstagram className="h-6 w-6" />
-          <span className="text-lg">Nexify</span>
-        </Link>
-        <div className="relative inline-block text-left">
-          {/* Settings button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full"
-            onClick={toggleMenu}
-          >
-            <IconSettings className="h-5 w-5" />
-            <span className="sr-only">Settings</span>
+    <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b bg-background px-4 shadow-sm sm:hidden">
+      <Link
+        href="#"
+        className="flex items-center gap-2 font-bold"
+        prefetch={false}
+      >
+        <IconBrandInstagram className="h-6 w-6" />
+        <span className="text-lg">Nexify</span>
+      </Link>
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <IconMenu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
           </Button>
-
-          {/* Dropdown Menu */}
-          {isMenuOpen && (
-            <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-              <div
-                className="py-1"
-                role="menu"
-                aria-orientation="vertical"
-                aria-labelledby="options-menu"
+        </SheetTrigger>
+        <SheetContent side="left" className="sm:hidden">
+          <div className="flex h-full flex-col">
+            <div className="flex h-16 items-center justify-between border-b px-4">
+              <Link
+                href="#"
+                className="flex items-center gap-2 font-bold"
+                prefetch={false}
               >
-                <a
-                  href="/new-post"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  role="menuitem"
+                <IconBrandInstagram className="h-6 w-6" />
+                <span className="text-lg">Nexify</span>
+              </Link>
+              <div className="relative inline-block text-left">
+                {/* Settings button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={toggleMenu}
                 >
-                  Create New Post
-                </a>
-                <a
-                  href="/edit-profile"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  role="menuitem"
-                >
-                  Edit Profile
-                </a>
-                <a
-                  href="/settings"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  role="menuitem"
-                >
-                  Settings
-                </a>
+                  <IconSettings className="h-5 w-5" />
+                  <span className="sr-only">Settings</span>
+                </Button>
+
+                {/* Dropdown Menu */}
+                {isMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                    <div
+                      className="py-1"
+                      role="menu"
+                      aria-orientation="vertical"
+                      aria-labelledby="options-menu"
+                    >
+                      <a
+                        href="/new-post"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        role="menuitem"
+                      >
+                        Create New Post
+                      </a>
+                      <a
+                        href="/edit-profile"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        role="menuitem"
+                      >
+                        Edit Profile
+                      </a>
+                      <a
+                        href="/settings"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        role="menuitem"
+                      >
+                        Settings
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          )}
-        </div>
-      </div>
-      <div className="flex-1 overflow-auto p-4">
-        <div className="flex flex-col items-center gap-4 pb-4 border-b">
-          {loading ? (
+            <div className="flex-1 overflow-auto p-4">
+              <div className="flex flex-col items-center gap-4 pb-4 border-b">
+              {loading ? (
             <div className="mt-9">
               <ClipLoader />
             </div>
           ) : (
-            <Avatar className="h-20 w-20 ">
-              <img
-                src={user.profileImgUrl || defaultImg}
-                alt="User"
-                className="w-full h-full object-cover object-top cursor-pointer"
-                onClick={handleImageClick}
-              />
-            </Avatar>
-          )}
-          <div className="text-center">
-            <div className="text-lg font-semibold">{user.name}</div>
-            <div className="text-sm text-muted-foreground">
-              @{user.username}
-            </div>
-          </div>
-          <div className="flex w-full justify-around text-sm font-medium">
-            <div className="flex flex-col items-center">
-              <div>{followerCount}</div>
-              <div className="text-muted-foreground">Followers</div>
-            </div>
-            <div className="flex flex-col items-center">
-              <div>{followingCount}</div>
-              <div className="text-muted-foreground">Following</div>
-            </div>
-          </div>
-        </div>
-        <nav className="mt-8 grid gap-[20px]">
+                <Avatar className="h-20 w-20">
+                  <img
+                    src={user.profileImgUrl || defaultImg}
+                    alt="User"
+                    className="w-full h-full object-cover object-top cursor-pointer"
+                    onClick={handleImageClick}
+                  /> 
+                </Avatar> )}
+                <div className="text-center">
+                  <div className="text-lg font-semibold">@{user.username}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {user.email}
+                  </div>
+                </div>
+                <div className="flex w-full justify-around text-sm font-medium">
+                  <div className="flex flex-col items-center">
+                    <div>{followerCount}</div>
+                    <div className="text-muted-foreground">Followers</div>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div>{followingCount}</div>
+                    <div className="text-muted-foreground">Following</div>
+                  </div>
+                </div>
+              </div>
+              <nav className="mt-8 grid gap-[20px]">
           <Link
             to="/"
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -260,21 +278,23 @@ const Sidebar = () => {
             Logout
           </Button>
         </nav>
-        {isModalOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
-            onClick={handleCloseModal}
-          >
-            <img
-              src={user.profileImgUrl || defaultImg}
-              alt="Full Screen Profile"
-              className="max-w-full max-h-full object-cover rounded-lg"
-            />
+              {isModalOpen && (
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+                  onClick={handleCloseModal}
+                >
+                  <img
+                    src={user.profileImgUrl || defaultImg}
+                    alt="Full Screen Profile"
+                    className="max-w-full max-h-full object-cover rounded-lg"
+                  />
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
-    </aside>
+        </SheetContent>
+      </Sheet>
+    </header>
   );
 };
-
-export default Sidebar;
+export default Sidebar2;

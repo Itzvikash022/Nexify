@@ -15,6 +15,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  bio: {
+    type: String,
+    required: false,
+    default: "Nexify User",
+  },
+  name: {
+    type: String,
+    required: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

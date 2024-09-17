@@ -9,7 +9,7 @@ import defaultImg from "../../assets/default.jpg";
 import Sidebar from "@/components/sidebar";
 import Sidebar2 from "@/components/sidebar/sidebar2";
 
-const Profile = () => {
+const ProfileImage = () => {
   const [userData, setUserData] = useState({});
   const [postData, setPosts] = useState([]);
   const [followers, setFollowers] = useState([]);
@@ -124,7 +124,7 @@ const Profile = () => {
         <Sidebar2 />
         <div className="flex-1 p-4 mt-2 md:ml-40">
           <div className="w-full max-w-5xl mx-auto">
-            <div className="bg-white p-8 shadow-lg rounded-lg mb-3">
+            <div className="bg-white p-8 shadow-lg rounded-lg mb-6">
               <div className="flex items-start">
                 <Avatar
                   className="w-32 h-32 border-2 cursor-pointer"
@@ -136,19 +136,19 @@ const Profile = () => {
                   />
                 </Avatar>
                 <div className="ml-8 flex-1">
-                  <h1 className="text-2xl font-bold mb-1">@{userData.username}</h1>
-                  <p className="text-gray-600">{userData.name}</p>
-                  <p className="text-gray-500 text-sm">
-                    - {userData.occupation}
+                  <h1 className="text-2xl font-bold mb-1">{userData.name}</h1>
+                  <p className="text-gray-600">@{userData.username}</p>
+                  <p className="text-gray-500 text-sm mt-1">
+                    {userData.occupation}
                   </p>
                   <div
-                    className={`mt-4 ${isExpanded ? "max-h-none" : "max-h-[55px]"} overflow-hidden transition-all`}
+                    className={`mt-4 ${isExpanded ? "max-h-none" : "max-h-[50px]"} overflow-hidden transition-all`}
                   >
-                    <p className="text-gray-700 font-poppins text-[12px] whitespace-pre-line">{userData.bio}</p>
+                    <p className="text-gray-700 text-sm whitespace-pre-line">{userData.bio}</p>
                   </div>
                   <button
                     onClick={handleToggle}
-                    className="text-[10px] text-blue-500 hover:underline mt-1"
+                    className="text-sm text-blue-500 hover:underline mt-2"
                   >
                     {isExpanded ? "Show Less" : "Show More"}
                   </button>
@@ -288,4 +288,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default ProfileImage;

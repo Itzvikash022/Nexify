@@ -7,6 +7,8 @@ import Home from '../pages/Home/Index';
 import EditProfile from '../pages/Profile/edit';
 import Explore from '../pages/explore';
 import Post from '../pages/Posts/main';
+import ProfilePage from '@/pages/test/myprofile';
+
 
 const PrivateRoutes = ({children}) => {
   const isUserLoggedIn = window.localStorage.getItem('user:token') || false;
@@ -17,7 +19,7 @@ const PrivateRoutes = ({children}) => {
   } else if (!isUserLoggedIn && isFormPage) {
     return children;
   } else {
-    const redirectUrl = isUserLoggedIn ? '/' : '/ac/signin';
+    const redirectUrl = isUserLoggedIn ? '/' : '/account';
     return <Navigate to={redirectUrl} replace />;
   }
 }
@@ -31,12 +33,7 @@ const Routes = () => {
     },
     { id: 2, 
       name: 'sign in', 
-      path: '/ac/signin', 
-      element: <Form /> 
-    },
-    { id: 3, 
-      name: 'sign up', 
-      path: '/ac/signup', 
+      path: '/account', 
       element: <Form /> 
     },
     { id: 4, 
@@ -68,7 +65,12 @@ const Routes = () => {
       name: 'post', 
       path: '/post/:id', 
       element: <Post /> 
-    }
+    },
+    { id: 10, 
+      name: 'profile',  
+      path: '/testprf', 
+      element: <ProfilePage /> 
+    },
   ];
 
   return (

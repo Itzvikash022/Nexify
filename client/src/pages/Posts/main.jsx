@@ -123,13 +123,17 @@ const Post = () => {
                 body: JSON.stringify({ id: postData._id }),
             });
             const { updatedPost } = await response.json();
-            setPost(updatedPost);
-            window.location.reload();
+    
+            // Only update the likes count while keeping the user data and other post information intact
+            setPost(prevPostData => ({
+                ...prevPostData,
+                likes: updatedPost.likes, // Update likes
+            }));
         } catch (error) {
             console.error('Failed to like post:', error);
         }
     };
-
+    
     const handleUnlike = async () => {
         try {
             const response = await fetch('http://localhost:8000/api/unlike', {
@@ -141,12 +145,17 @@ const Post = () => {
                 body: JSON.stringify({ id: postData._id }),
             });
             const { updatedPost } = await response.json();
-            setPost(updatedPost);
-            window.location.reload();
+    
+            // Only update the likes count while keeping the user data and other post information intact
+            setPost(prevPostData => ({
+                ...prevPostData,
+                likes: updatedPost.likes, // Update likes
+            }));
         } catch (error) {
             console.error('Failed to unlike post:', error);
         }
     };
+    
 
     const deletePost = async () => {
         try {

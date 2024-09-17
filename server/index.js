@@ -32,9 +32,9 @@ import Comments from './models/comment.js';
 app.post('/api/register', async (req, res) =>{
     console.log("Register called");
     try {
-        const { username, email, password, occupation, img } = req.body;
+        const { username, email, password, name, img } = req.body;
 
-        if(!username || !email || !password || !occupation || !img){
+        if(!username || !email || !password){
             res.status(400).send('empty fields not allowed')
         }
         
@@ -53,7 +53,7 @@ app.post('/api/register', async (req, res) =>{
             username, 
             email,
             password: hashedPassword,
-            occupation,
+            name,
             profileImgUrl : img
             })
             
@@ -158,6 +158,9 @@ app.get('/api/profile', auth, async (req, res) => {
             following: user.following,
             id: user._id,
             profileImgUrl: user.profileImgUrl,
+            name: user.name,
+            occupation: user.occupation,
+            bio : user.bio,
         };
         res.status(200).json({ posts, userDetails })
                 
@@ -186,6 +189,9 @@ app.get('/api/others', auth, async (req, res) => {
             following: user.following,
             id: user._id,
             profileImgUrl: user.profileImgUrl,
+            bio : user.bio,
+            name : user.name,
+            occupation : user.occupation,
         };
         res.status(200).json({ posts, userDetails, follower ,isFollowed: !!isFollowed }); //by putting !! -> the variable passes value in boolean[true/false]
                 
@@ -193,6 +199,41 @@ app.get('/api/others', auth, async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// Get all followers of the logged-in user (by user ID)
+app.get('/api/user/followers', auth, async (req, res) => {
+    try {
+      const { user } = req;  // The logged-in user's ID is in req.user
+  
+      const followers = await Follow.find({ followed: user._id })
+        .populate('follower', 'username email bio name occupation profileImgUrl')
+        .exec();
+  
+      const followerDetails = followers.map(f => f.follower);
+  
+      res.status(200).json({ followers: followerDetails });
+    } catch (error) {
+      res.status(500).send(`Error: ${error.message}`);
+    }
+  });
+  
+  // Get all users the logged-in user is following (by user ID)
+  app.get('/api/user/following', auth, async (req, res) => {
+    try {
+      const { user } = req;
+  
+      const following = await Follow.find({ follower: user._id })
+        .populate('followed', 'username email bio name occupation profileImgUrl')
+        .exec();
+  
+      const followingDetails = following.map(f => f.followed);
+  
+      res.status(200).json({ following: followingDetails });
+    } catch (error) {
+      res.status(500).send(`Error: ${error.message}`);
+    }
+  });
+  
 
 
 //Followers Count
@@ -283,6 +324,51 @@ app.delete('/api/delete-post', async (req, res) => {
 });
 
 
+// Get all followers of a user by username from the URL
+app.get('/api/user/:username/followers', async (req, res) => {
+    try {
+      const { username } = req.params;
+  
+      const user = await Users.findOne({ username });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      const followers = await Follow.find({ followed: user._id })
+        .populate('follower', 'username name profileImgUrl')
+        .exec();
+  
+      const followerDetails = followers.map(f => f.follower);
+  
+      res.status(200).json({ followers: followerDetails });
+    } catch (error) {
+      res.status(500).send(`Error: ${error.message}`);
+    }
+  });
+  
+  // Get all users the specified user is following by username from the URL
+  app.get('/api/user/:username/following', async (req, res) => {
+    try {
+      const { username } = req.params;
+  
+      const user = await Users.findOne({ username });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      const following = await Follow.find({ follower: user._id })
+        .populate('followed', 'username name profileImgUrl')
+        .exec();
+  
+      const followingDetails = following.map(f => f.followed);
+  
+      res.status(200).json({ following: followingDetails });
+    } catch (error) {
+      res.status(500).send(`Error: ${error.message}`);
+    }
+  });
+  
+
 
 //Homepage
 app.get('/api/feed', auth, async (req, res) => {
@@ -297,16 +383,46 @@ app.get('/api/feed', auth, async (req, res) => {
 })
 
 
-//User Data
-app.get('/api/user', auth, async (req, res) => {
+// Trending posts
+app.get('/api/trending-post', auth, async (req, res) => {
     try {
-        const { user } = req;
-        res.status(200).json({ user })
-                
+      const { user } = req;
+  
+      // Fetch posts with user details and likes array
+      const posts = await Posts.find()
+        .populate('user', '_id username email profileImgUrl commentCount')
+        .exec();
+  
+      // Calculate likes count and sort posts by likes count
+      const sortedPosts = posts
+        .map(post => ({
+          ...post.toObject(),
+          likesCount: post.likes.length
+        }))
+        .sort((a, b) => b.likesCount - a.likesCount) // Sort by likes count in descending order
+        .slice(0, 21); // Limit to 21 posts
+  
+      res.status(200).json({ posts: sortedPosts, user });
+  
     } catch (error) {
-        res.status(500).send(`error : ${error.message}`)
+      res.status(500).send(`error : ${error.message}`);
     }
-})
+  });
+  
+
+
+
+
+    //User Data
+    app.get('/api/user', auth, async (req, res) => {
+        try {
+            const { user } = req;
+            res.status(200).json({ user })
+                    
+        } catch (error) {
+            res.status(500).send(`error : ${error.message}`)
+        }
+    })
 
 
 //Follow User
@@ -386,9 +502,9 @@ app.put('/api/unlike', auth, async (req, res)=>{
 //Create Post
 app.post('/api/new-post', auth, async (req, res) =>{
     try {
-        const {caption, desc, url} = req.body
+        const {caption, desc, url, location} = req.body
         const { user } = req
-        if(!caption || !desc || !url){
+        if(!caption || !desc || !url || !location){
             res.status(400).send('empty fields not allowed')
         }
 
@@ -397,6 +513,7 @@ app.post('/api/new-post', auth, async (req, res) =>{
             description : desc,
             imageUrl: url,
             user : user,
+            location : location
         })
         const postCreated = await newPost.save();
         console.log(postCreated, 'post created');
@@ -412,9 +529,9 @@ app.post('/api/new-post', auth, async (req, res) =>{
 app.post('/api/edit-profile', auth, async (req, res) =>{
     console.log("Edit Profile called");
     try {
-        const { username, email, password, occupation, profileImgUrl } = req.body;
+        const { username, email, password, occupation, profileImgUrl, bio, name } = req.body;
         
-        if (!username && !email && !password && !occupation && !profileImgUrl) {
+        if (!username && !email && !password && !occupation && !profileImgUrl && !bio && !name) {
             return res.status(400).send('No fields to update');
         }
         const userId = req.user.id;
@@ -449,6 +566,12 @@ app.post('/api/edit-profile', auth, async (req, res) =>{
         }
         if (profileImgUrl) {
             user.profileImgUrl = profileImgUrl;
+        }
+        if (bio) {
+            user.bio = bio;
+        }
+        if (name) {
+            user.name = name;
         }
 
         // Save the updated user

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const db = `mongodb+srv://vik:vik@cluster0.qg6ry.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+const db = `mongodb+srv://vik:vik@cluster0.qg6ry.mongodb.net/nexify?retryWrites=true&w=majority&appName=Cluster0`
 
 mongoose.connect(db, {
 }).then(()=>{

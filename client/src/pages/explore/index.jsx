@@ -1,16 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from '../../components/sidebar';
-import { links } from '../Home/data';
-import { useNavigate } from 'react-router-dom';
-import defaultImg from '../../assets/default.jpg';
-import bg_img from "../../assets/login_background.jpg";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Search as SearchIcon } from "lucide-react";
+import Sidebar from "@/components/sidebar";
+import Sidebar2 from "@/components/sidebar/sidebar2";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import defaultImg from "../../assets/default.jpg";
+import ClipLoader from "react-spinners/ClipLoader";
+import { IconHeart, IconMessageCircle } from "@tabler/icons-react";
 
 const Explore = () => {
-  const [query, setQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [followerCounts, setFollowerCounts] = useState({}); // State to store follower counts
   const navigate = useNavigate();
+  const [postData, setData] = useState([]);
+  const [user, setUser] = useState({});
 
   useEffect(() => {
     if (query.length > 0) {
@@ -25,87 +31,158 @@ const Explore = () => {
           .then((res) => res.json())
           .then((data) => {
             setResults(data);
-            fetchFollowerCounts(data); // Fetch follower counts for search results
+            setShowDropdown(data.length > 0); // Show dropdown if there are results
           })
-          .catch((error) => console.error('Error fetching users:', error));
+          .catch((error) => {
+            console.error("Error fetching users:", error);
+            setShowDropdown(false); // Hide dropdown in case of error
+          });
       }, 300); // Debounce delay
 
       return () => clearTimeout(delayDebounceFn);
     } else {
       setResults([]); // Clear results if the query is empty
+      setShowDropdown(false); // Hide dropdown if query is cleared
     }
   }, [query]);
 
-  // Function to fetch follower counts for each user
-  const fetchFollowerCounts = async (users) => {
-    const counts = {};
-    for (let user of users) {
+  useEffect(() => {
+    const getPosts = async () => {
+      setLoading(true);
       try {
-        const response = await fetch("http://localhost:8000/api/followerCount", {
-          method: "POST",
+        const response = await fetch("http://localhost:8000/api/trending-post", {
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("user:token")}`,
           },
-          body: JSON.stringify({ userId: user._id }), // Send userId in the request body
         });
-        const followerData = await response.json();
-        counts[user._id] = followerData.followers; // Store follower count with user ID as key
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch posts");
+        }
+
+        const postData = await response.json();
+        setData(postData.posts);
+        setUser(postData.user);
       } catch (error) {
-        console.error("Failed to fetch follower count for user:", user.username, error);
+        console.error("Error fetching posts:", error);
+      } finally {
+        setLoading(false);
       }
-    }
-    setFollowerCounts(counts); // Update state with all fetched follower counts
-  };
+    };
+
+    getPosts();
+  }, [navigate]);
 
   const handleUserClick = (username) => {
     navigate(`/user/${username}`);
   };
 
   return (
-    <div className='flex'>
-      <Sidebar
-        className={'w-[20%] bg-white fixed h-screen overflow-y-auto'}
-        links={links}
-        btn_class={'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[170px]'}
-      />
+    <div className="min-h-screen bg-background">
+      <Sidebar />
+      <div className="flex flex-1 flex-col">
+        <Sidebar2 />
+        <div className="md:ml-72 p-4 sm:p-6">
+          {/* Search bar */}
+          <div className="relative mb-8 max-w-full sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto">
+            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search users"
+              className="pl-10 pr-4 py-2 w-full"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            {/* Search results dropdown */}
+            {showDropdown && (
+              <div className="absolute z-10 w-full mt-1 bg-popover rounded-md shadow-lg">
+                {results.map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center p-3 hover:bg-muted cursor-pointer"
+                    onClick={() => handleUserClick(user.username)}
+                  >
+                    <Avatar className="h-8 w-8 mr-3">
+                      <AvatarImage
+                        src={user.profileImgUrl || defaultImg}
+                        alt={user.username}
+                      />
+                      <AvatarFallback>{user.username[0]}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{user.username}</p>
+                      <p className="text-sm text-muted-foreground">
+                        @{user.username}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-      <div className='flex flex-col items-center h-screen ml-[20%] w-[80%] p-4 bg-cover bg-no-repeat bg-center' style={{ 
-            backgroundImage: `url(${bg_img})`}}>
-        <input
-          type="text"
-          placeholder="Search by username"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="mt-6 w-[600px] h-[50px] text-center rounded-md border-2 border-gray-300 p-3 focus:outline-none focus:border-blue-500"
-        />
 
-        <div className={`bg-white rounded-lg w-[600px] border mt-6 scrollbar-hide overflow-y-auto p-4 shadow-lg ${results.length > 0 ? 'h-auto' : 'h-[300px]'}`}>
-          {results.length > 0 ? (
-            results.map((user) => (
-              <div
-                key={user._id}
-                className="flex items-center p-4 cursor-pointer border-b hover:bg-gray-100 mb-2 rounded-md transition duration-300 ease-in-out"
-                onClick={() => handleUserClick(user.username)}
-              >
-                <img
-                  src={user.profileImgUrl || defaultImg}
-                  alt={`${user.username}'s profile`}
-                  className="w-14 h-14 rounded-full object-cover mr-4"
-                />
-                <div className="ml-4">
-                  <div className="text-xl font-semibold">@{user.username}</div>
-                  <div className="text-md text-gray-600 mt-1">
-                    Followers: {followerCounts[user._id]}
+
+{/* Trending posts grid */}
+<h1 className="text-3xl font-bold mb-6 text-center">Trending</h1>
+
+{loading ? (
+  <div className="flex flex-col h-full items-center justify-center">
+    <ClipLoader size={50} color="black" />
+  </div>
+) : (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {postData.length > 0 ? (
+      postData.map(
+        (
+          {
+            _id = "",
+            imageUrl = "",
+            likes = [],
+            commentCount = 0,
+          },
+          index
+        ) => {
+
+          return (
+            <div 
+              key={_id} 
+              className="relative aspect-square bg-muted rounded-md overflow-hidden shadow-xl border group"
+            >
+              {/* Post Image */}
+              <img
+                src={imageUrl || "/placeholder.svg?height=300&width=300"}
+                alt={`Post ${index + 1}`}
+                className="w-full h-full object-cover group-hover:blur-sm transition-all duration-300 cursor-pointer"
+                onClick={() => navigate(`/post/${_id}`)}
+              />
+              {/* Overlay with Icons */}
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-1">
+                    <IconHeart className="text-white text-xl" />
+                    <span className="text-white text-lg font-semibold">{likes.length}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <IconMessageCircle className="text-white text-xl" />
+                    <span className="text-white text-lg font-semibold">{commentCount}</span>
                   </div>
                 </div>
               </div>
-            ))
-          ) : (
-            query.length > 0 && (
-              <div className="flex justify-center mt-6 font-bold text-gray-700">No Users Found</div>
-            )
-          )}
+            </div>
+          );
+        }
+      )
+    ) : (
+      <div className="col-span-3 text-center">No posts found</div>
+    )}
+  </div>
+)}
+
+
+
         </div>
       </div>
     </div>
