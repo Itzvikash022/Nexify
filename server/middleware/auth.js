@@ -3,7 +3,7 @@ import Users from '../models/user.js'
 
 const auth = async (req, res, next) => {
     try {
-        console.log(req.headers, 'headers');
+        // console.log(req.headers, 'headers');
 
         const authHeader = req.headers['authorization'];
         if (!authHeader) {

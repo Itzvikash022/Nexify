@@ -68,7 +68,7 @@ const Routes = () => {
     },
     { id: 10, 
       name: 'profile',  
-      path: '/testprf', 
+      path: '/testprf/:id', 
       element: <ProfilePage /> 
     },
   ];

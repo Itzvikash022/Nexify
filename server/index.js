@@ -462,7 +462,120 @@ app.delete('/api/unfollow', auth, async (req, res)=>{
     }
 })
 
+app.get('/api/suggestions', auth, async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id;
 
+    let suggestions = new Set(); // Using a Set to avoid duplicates
+
+    // Scenario 1: Find users who follow the logged-in user ("vikash") but "vikash" doesn't follow them back
+    const followers = await Follow.find({ followed: loggedInUserId })
+      .populate('follower')
+      .exec();
+    
+    const loggedInUserFollowings = await Follow.find({ follower: loggedInUserId })
+      .populate('followed')
+      .exec();
+
+    // Create a set of user IDs that "vikash" is following
+    const loggedInUserFollowingIds = new Set(loggedInUserFollowings.map(following => following.followed._id.toString()));
+
+    // Add followers that "vikash" does not follow back to suggestions
+    followers.forEach(followerEntry => {
+      const follower = followerEntry.follower;
+      if (!loggedInUserFollowingIds.has(follower._id.toString())) {
+        console.log(`Direct follower ${follower.username} added to suggestions`);
+        suggestions.add(follower);
+      }
+    });
+
+    // Scenario 2: Find users that the users "vikash" follows are following
+    for (const followingEntry of loggedInUserFollowings) {
+      const followedUser = followingEntry.followed;
+
+      // Find who the followed users are following
+      const followingsOfFollowedUser = await Follow.find({ follower: followedUser._id })
+        .populate('followed')
+        .exec();
+      
+      followingsOfFollowedUser.forEach(followingEntry => {
+        const followedUserOfFollowedUser = followingEntry.followed;
+
+        // Suggest users followed by "vik's" followers if "vikash" doesn't already follow them
+        if (
+          followedUserOfFollowedUser._id.toString() !== loggedInUserId.toString() && 
+          !loggedInUserFollowingIds.has(followedUserOfFollowedUser._id.toString())
+        ) {
+          console.log(`Indirect suggestion ${followedUserOfFollowedUser.username} added to suggestions`);
+          suggestions.add(followedUserOfFollowedUser);
+        }
+      });
+    }
+
+    // Convert the set to an array
+    let suggestionsArray = Array.from(suggestions);
+
+    // Shuffle and return the top 7 suggestions
+    suggestionsArray = shuffleArray(suggestionsArray).slice(0, 7);
+
+    // Send the suggestions back to the frontend
+    res.json(suggestionsArray);
+  } catch (error) {
+    console.error("Error fetching suggestions: ", error);
+    res.status(500).send('Server error');
+  }
+});
+
+// Utility function to shuffle an array
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+  
+  
+
+//Trending users
+app.get('/trending-users', async (req, res) => {
+    try {
+        
+      // Step 1: Fetch all users
+      const users = await Users.find({}, '_id username name profileImgUrl').exec();
+  
+      // Step 2: Fetch all follow relationships and count followers for each user
+      const followCounts = await Follow.aggregate([
+        { $group: { _id: '$followed', count: { $sum: 1 } } },
+      ]).exec();
+  
+      // Create a map to store follower counts by user ID
+      const followerCountMap = followCounts.reduce((map, { _id, count }) => {
+        map[_id.toString()] = count;
+        return map;
+      }, {});
+  
+      // Add follower counts to user objects
+      const usersWithFollowerCount = users.map(user => ({
+        ...user.toObject(),
+        followerCount: followerCountMap[user._id.toString()] || 0,
+      }));
+  
+      // Step 3: Sort users by follower count in descending order
+      usersWithFollowerCount.sort((a, b) => b.followerCount - a.followerCount);
+
+       // Step 4: Limit to top 5 users
+    const top5Users = usersWithFollowerCount.slice(0, 5);
+  
+      res.json(top5Users);
+    } catch (error) {
+      console.error('Error finding trending users:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+
+  
 //Like Post
 app.put('/api/like', auth, async (req, res)=>{
     try {
@@ -640,7 +753,7 @@ app.get('/api/comments/:postId', async (req, res) => {
     console.log('Fetching comments for postId:', req.params.postId);
     try {
         const comments = await Comments.find({ post: req.params.postId })
-            .populate('user', 'username profileImgUrl');
+            .populate('user', 'username profileImgUrl').sort({ createdAt : -1 });
         res.status(200).json({ success: true, comments });
     } catch (err) {
         console.error('Error fetching comments:', err);

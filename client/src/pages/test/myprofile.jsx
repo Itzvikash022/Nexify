@@ -1,291 +1,299 @@
-import React, { useState, useEffect } from "react";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Heart } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { ClipLoader } from "react-spinners";
-import defaultImg from "../../assets/default.jpg";
-import Sidebar from "@/components/sidebar";
-import Sidebar2 from "@/components/sidebar/sidebar2";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { IconHeart, IconMessage } from '@tabler/icons-react';
+import ClipLoader from 'react-spinners/ClipLoader';
+import Sidebar from '../../components/sidebar';
+import { links } from '../Home/data';
+import defaultImg from '../../assets/default.jpg';
+import Button from '../../components/button/Button';
+import Mainbg from '../../assets/login_background.jpg';
 
 const ProfileImage = () => {
-  const [userData, setUserData] = useState({});
-  const [postData, setPosts] = useState([]);
-  const [followers, setFollowers] = useState([]);
-  const [following, setFollowing] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [followerCount, setFollowerCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate();
+    const [postData, setPost] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [user, setUser] = useState({});
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState('');
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch("http://localhost:8000/api/profile", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("user:token")}`,
-          },
-        });
-        const data = await response.json();
-        setUserData(data.userDetails);
-        setPosts(data.posts);
-      } catch (error) {
-        console.error("Failed to fetch user profile:", error);
-        setError("Failed to fetch user profile.");
-      } finally {
-        setLoading(false);
-      }
+    useEffect(() => {
+        const getPost = async () => {
+            try {
+                const response = await fetch(`http://localhost:8000/api/post?id=${id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('user:token')}`,
+                    },
+                });
+                const data = await response.json();
+                setPost(data.post || null);
+            } catch (error) {
+                console.error('Failed to fetch post:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        getPost();
+    }, [id]);
+
+    useEffect(() => {
+        const getUsers = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/api/user', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('user:token')}`,
+                    },
+                });
+                const userData = await response.json();
+                setUser(userData.user || {});
+            } catch (error) {
+                console.error('Failed to fetch user:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        getUsers();
+    }, []);
+
+    useEffect(() => {
+        const getComments = async () => {
+            try {
+                const response = await fetch(`http://localhost:8000/api/comments/${id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('user:token')}`,
+                    },
+                });
+                const data = await response.json();
+                if (data.success) {
+                    setComments(data.comments);
+                } else {
+                    console.error('Failed to fetch comments:', data.message);
+                }
+            } catch (error) {
+                console.error('Failed to fetch comments:', error);
+            }
+        };
+        getComments();
+    }, [id]);
+
+    const handleAddComment = async () => {
+        if (newComment.trim()) {
+            try {
+                const response = await fetch('http://localhost:8000/api/comment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('user:token')}`,
+                    },
+                    body: JSON.stringify({
+                        postId: postData._id,
+                        userId: user._id,
+                        commentText: newComment,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    setNewComment('');
+                    window.location.reload();
+                } else {
+                    console.error('Failed to add comment:', data.message);
+                }
+            } catch (error) {
+                console.error('Failed to add comment:', error);
+            }
+        }
     };
 
-    fetchUserProfile();
-  }, []);
+    const handleLike = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/api/like', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('user:token')}`,
+                },
+                body: JSON.stringify({ id: postData._id }),
+            });
+            const { updatedPost } = await response.json();
+    
+            // Only update the likes count while keeping the user data and other post information intact
+            setPost(prevPostData => ({
+                ...prevPostData,
+                likes: updatedPost.likes, // Update likes
+            }));
+        } catch (error) {
+            console.error('Failed to like post:', error);
+        }
+    };
+    
+    const handleUnlike = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/api/unlike', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('user:token')}`,
+                },
+                body: JSON.stringify({ id: postData._id }),
+            });
+            const { updatedPost } = await response.json();
+    
+            // Only update the likes count while keeping the user data and other post information intact
+            setPost(prevPostData => ({
+                ...prevPostData,
+                likes: updatedPost.likes, // Update likes
+            }));
+        } catch (error) {
+            console.error('Failed to unlike post:', error);
+        }
+    };
+    
 
-  useEffect(() => {
-    const fetchFollowers = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          "http://localhost:8000/api/user/followers",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("user:token")}`,
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Error fetching followers");
-        const data = await response.json();
-        setFollowers(data.followers);
-        setFollowerCount(data.followers.length);
-      } catch (error) {
-        console.error("Failed to fetch followers:", error);
-        setError("Failed to fetch followers.");
-      } finally {
-        setLoading(false);
-      }
+    const deletePost = async () => {
+        try {
+            await fetch(`http://localhost:8000/api/delete-post?id=${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('user:token')}`,
+                },
+                body: JSON.stringify({ id: postData._id }),
+            });
+            navigate('/');
+        } catch (error) {
+            console.error('Failed to delete the post:', error);
+        }
     };
 
-    fetchFollowers();
-  }, []);
-
-  useEffect(() => {
-    const fetchFollowing = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          "http://localhost:8000/api/user/following",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("user:token")}`,
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Error fetching following");
-        const data = await response.json();
-        setFollowing(data.following);
-        setFollowingCount(data.following.length);
-      } catch (error) {
-        console.error("Failed to fetch following:", error);
-        setError("Failed to fetch following.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFollowing();
-  }, []);
-
-  const handleToggle = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const handleImageClick = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
-  return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex flex-1 flex-col">
-        <Sidebar2 />
-        <div className="flex-1 p-4 mt-2 md:ml-40">
-          <div className="w-full max-w-5xl mx-auto">
-            <div className="bg-white p-8 shadow-lg rounded-lg mb-6">
-              <div className="flex items-start">
-                <Avatar
-                  className="w-32 h-32 border-2 cursor-pointer"
-                  onClick={handleImageClick}
-                >
-                  <AvatarImage
-                    src={userData.profileImgUrl || defaultImg}
-                    alt="Profile Image"
-                  />
-                </Avatar>
-                <div className="ml-8 flex-1">
-                  <h1 className="text-2xl font-bold mb-1">{userData.name}</h1>
-                  <p className="text-gray-600">@{userData.username}</p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    {userData.occupation}
-                  </p>
-                  <div
-                    className={`mt-4 ${isExpanded ? "max-h-none" : "max-h-[50px]"} overflow-hidden transition-all`}
-                  >
-                    <p className="text-gray-700 text-sm whitespace-pre-line">{userData.bio}</p>
-                  </div>
-                  <button
-                    onClick={handleToggle}
-                    className="text-sm text-blue-500 hover:underline mt-2"
-                  >
-                    {isExpanded ? "Show Less" : "Show More"}
-                  </button>
-                </div>
-              </div>
-              <div className="flex justify-around mt-6">
-                <div className="text-center">
-                  <p className="font-bold">{postData.length}</p>
-                  <p className="text-gray-500 text-sm">Posts</p>
-                </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <div className="text-center cursor-pointer">
-                      <p className="font-bold">{followerCount}</p>
-                      <p className="text-gray-500 text-sm">Followers</p>
-                    </div>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Followers</DialogTitle>
-                    </DialogHeader>
-                    <ScrollArea className="h-[400px]">
-                      {followers.map((follower) => (
-                        <div
-                          key={follower.id}
-                          className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
-                          onClick={() => navigate(`/user/${follower.username}`)}
-                        >
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage
-                              src={follower.profileImgUrl || defaultImg}
-                              alt={follower.name}
-                            />
-                          </Avatar>
-                          <div className="ml-2">
-                            <p className="font-semibold">{follower.name}</p>
-                            <p className="text-sm text-gray-500">
-                              @{follower.username}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </ScrollArea>
-                  </DialogContent>
-                </Dialog>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <div className="text-center cursor-pointer">
-                      <p className="font-bold">{followingCount}</p>
-                      <p className="text-gray-500 text-sm">Following</p>
-                    </div>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Following</DialogTitle>
-                    </DialogHeader>
-                    <ScrollArea className="h-[400px]">
-                      {following.map((following) => (
-                        <div
-                          key={following.id}
-                          className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
-                          onClick={() => navigate(`/user/${following.username}`)}
-                        >
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage
-                              src={following.profileImgUrl || defaultImg}
-                              alt={following.name}
-                            />
-                          </Avatar>
-                          <div className="ml-2">
-                            <p className="font-semibold">{following.name}</p>
-                            <p className="text-sm text-gray-500">
-                              @{following.username}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </ScrollArea>
-                  </DialogContent>
-                </Dialog>
-              </div>
+    if (!postData) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <p>No post found.</p>
             </div>
+        );
+    }
 
-            {/* Posts grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-              {loading ? (
-                <div className="col-span-full flex justify-center py-20">
-                  <ClipLoader size={50} color="black" />
+    const isAlreadyLiked = postData.likes.includes(user._id);
+    const formattedDate = new Date(postData.createdAt).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+
+    return (
+        <div className="flex" style={{ backgroundImage: `url(${Mainbg})` }}>
+            <Sidebar
+                className="w-[20%] bg-white fixed h-screen overflow-y-auto"
+                links={links}
+                btn_class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[170px]"
+            />
+            <div className="ml-[25%] justify-center flex flex-col items-center w-[900px] h-screen p-10" id="post-section">
+                {
+                    loading ?
+                    <ClipLoader
+                        size={75}
+                        color="black"
+                    /> :
+                <div className="w-full bg-white p-6 rounded-lg shadow-md">
+                    {user.username === postData.user.username && (
+                        <div className="mb-4 flex justify-end">
+                            <Button
+                                label="Delete this Post?"
+                                onClick={deletePost}
+                            />
+                        </div>
+                    )}
+                    <div className="flex items-center mb-4 cursor-pointer" onClick={() => user.username === postData.user.username ? navigate('/profile') : navigate(`/user/${postData.user.username}`)}>
+                        <div className="flex justify-center items-center w-16 h-16 rounded-full overflow-hidden">
+                            <img src={postData.user.profileImgUrl || defaultImg} alt="Profile" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="ml-4">
+                            <h3 className="font-semibold text-xl">@{postData.user.username}</h3>
+                            <p className="text-sm text-gray-600">{formattedDate}</p>
+                        </div>
+                    </div>
+                    <div className="flex justify-center bg-gray-200 p-2 mb-4">
+                        <img
+                            src={postData.imageUrl}
+                            alt="Post"
+                            className="w-auto max-h-[600px] rounded-lg shadow-md"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <h3 className="font-semibold text-lg">{postData.user.username}: {postData.caption}</h3>
+                        <p className="text-gray-700">{postData.description}</p>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                        <div className="flex items-center cursor-pointer" onClick={isAlreadyLiked ? handleUnlike : handleLike}>
+                            <IconHeart size={24} color={isAlreadyLiked ? 'red' : 'black'} fill={isAlreadyLiked ? 'red' : 'white'} />
+                            <span className="ml-2">{postData.likes.length} Likes</span>
+                        </div>
+                        <div className="flex items-center">
+                            <IconMessage size={24} />
+                            <span className="ml-2">{comments.length} Comments</span>
+                        </div>
+                    </div>
+                </div> }
+            </div>
+            <div className="ml-[2%] flex flex-col mt-[2%] w-[500px] h-[900px] bg-white rounded-lg shadow-lg p-6">
+    {
+        loading ? (
+            <div className="flex justify-center items-center flex-1">
+                <ClipLoader size={75} color="black" />
+            </div>
+        ) : (
+            <>
+                <div className="flex-1 overflow-y-auto scrollbar-hide">
+                    {comments.length > 0 ? (
+                        comments.map((comment) => (
+                            <div key={comment._id} className="flex items-start border-b-4 pb-2 mb-4">
+                                <img
+                                    src={comment.user.profileImgUrl || defaultImg}
+                                    alt={`${comment.user.username}'s profile`}
+                                    className="w-10 h-10 rounded-full mr-4"
+                                />
+                                <div>
+                                    <p className="font-bold">@{comment.user.username}</p>
+                                    <p className="text-gray-700"> : {comment.comment}</p>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-600">No comments yet, be the first one to leave a comment!!</p>
+                    )}
                 </div>
-              ) : postData.length === 0 ? (
-                <div className="col-span-full text-center py-20">
-                  No Posts Available
-                </div>
-              ) : (
-                postData.map(({ _id, imageUrl, commentCount, likes }) => (
-                  <div
-                    key={_id}
-                    className="relative group aspect-square shadow-md overflow-hidden"
-                    onClick={() => navigate(`/post/${_id}`)}
-                  >
-                    <img
-                      src={imageUrl}
-                      alt={`Post ${_id}`}
-                      className="w-full h-full object-cover"
+                <div className="flex items-center border-t pt-4">
+                    <input
+                        type="text"
+                        placeholder="Add a comment..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="w-full border rounded-l-lg p-2"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="flex items-center space-x-4 text-white">
-                        <span className="flex items-center">
-                          <Heart className="mr-1" /> {likes.length}
-                        </span>
-                        <span className="flex items-center">
-                          <MessageCircle className="mr-1" /> {commentCount}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+                    <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded-r-lg"
+                        onClick={handleAddComment}
+                    >
+                        Post
+                    </button>
+                </div>
+            </>
+        )
+    }
+</div>
 
-          {isModalOpen && (
-            <div
-              className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
-              onClick={handleCloseModal}
-            >
-              <img
-                src={userData.profileImgUrl || defaultImg}
-                alt="Full Screen Profile"
-                className="max-w-full max-h-full object-cover rounded-lg"
-              />
-            </div>
-          )}
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default ProfileImage;

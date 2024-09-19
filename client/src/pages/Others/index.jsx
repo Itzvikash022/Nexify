@@ -238,6 +238,24 @@ const Others = () => {
     setIsFollowingDialogOpen(false);
   };
 
+  const followersMap = new Map(followers.map(follower => [follower.username, follower]));
+  console.log(followersMap,'followers');
+  
+  const followingMap = new Map(following.map(followingUser => [followingUser.username, followingUser]));
+  console.log(followingMap, 'following');
+
+  // Check if logged-in user is in followers list
+const isLoggedUserInFollowers = followersMap.has(LoggedUser.username);
+
+// Check if logged-in user is in following list
+const isLoggedUserInFollowing = followingMap.has(LoggedUser.username);
+
+// Conditional flag: true if logged-in user is in following list but not in followers list
+const isFollowBack = isLoggedUserInFollowing && !isLoggedUserInFollowers;
+
+console.log(isFollowBack, 'tf');
+
+  
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
@@ -247,6 +265,11 @@ const Others = () => {
           <div className="w-full max-w-5xl mx-auto">
             <div className="bg-white p-8 shadow-lg rounded-lg mb-3">
               <div className="flex items-start">
+              {loading ? (
+            <div className="ml-12 mt-12 m-auto">
+              <ClipLoader color="gray"/>
+            </div>
+          ) : (
                 <Avatar
                   className="w-32 h-32 border-2 cursor-pointer"
                   onClick={handleImageClick}
@@ -255,10 +278,24 @@ const Others = () => {
                     src={user.profileImgUrl || defaultImg}
                     alt="Profile Image"
                   />
-                </Avatar>
-
+                </Avatar> )}
                 <div className="ml-8 flex-1">
+                  <div className="flex">
                   <h1 className="text-2xl font-bold mb-1">@{user.username}</h1>
+                  <div className="flex -mt-4 ml-6">
+                  {user?.username !== LoggedUser.username &&
+                      <Button
+                      label={isFollowed ? "Unfollow" : (isFollowBack ? "Follow Back" : "Follow")}
+                      disabled={loading}
+                      onClick={isFollowed ? handleUnfollow : handleFollow}
+                      className={`w-[110px] ${isFollowed ? 'bg-red-600 hover:bg-red-400' : 'bg-green-600 hover:bg-green-400'} mt-4 ml-6 h-[30px]`}
+                    >
+                      {isFollowed ? "Unfollow" : (isFollowBack ? "Follow Back" : "Follow")}
+                    </Button>
+                    
+                  }
+                </div>
+                  </div>
                   <p className="text-gray-600">{user.name}</p>
                   <p className="text-gray-500 text-[10px]">
                     - {user.occupation}
@@ -279,28 +316,7 @@ const Others = () => {
                     {isExpanded ? "Show Less" : "Show More"}
                   </button>
                 </div>
-                <div className="flex">
-                  {user?.username !== LoggedUser.username &&
-                    (!isFollowed ? (
-                      <Button
-                        label="Follow"
-                        disabled={loading}
-                        onClick={handleFollow}
-                        className="w-[120px] bg-green-600 hover:bg-green-400 mt-4 ml-6 h-[30px]"
-                      >
-                        Follow
-                      </Button>
-                    ) : (
-                      <Button
-                        label="Unfollow"
-                        disabled={loading}
-                        onClick={handleUnfollow}
-                        className="w-[120px] bg-red-600 hover:bg-red-400 mt-4 ml-6"
-                      >
-                        Unfollow
-                      </Button>
-                    ))}
-                </div>
+                
               </div>
 
               <div className="flex justify-around mt-6">
@@ -326,7 +342,11 @@ const Others = () => {
                       <DialogTitle>Followers</DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="h-[400px]">
-                      {followers.map((follower) => (
+                      { followerCount == 0 ? (
+                        <p className="text-center text-gray-500">No followers found.</p>
+                      ) : 
+                      
+                      (followers.map((follower) => (
                         <div
                           key={follower.id}
                           className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
@@ -345,7 +365,7 @@ const Others = () => {
                             </p>
                           </div>
                         </div>
-                      ))}
+                      )))}
                     </ScrollArea>
                   </DialogContent>
                 </Dialog>
@@ -368,7 +388,12 @@ const Others = () => {
                       <DialogTitle>Following</DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="h-[400px]">
-                      {following.map((following) => (
+                      
+                      {  followingCount == 0 ? (
+                        <p className="text-center text-gray-500">No following found.</p>
+                      ) : 
+                      
+                       (following.map((following) => (
                         <div
                           key={following.id}
                           className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
@@ -387,7 +412,7 @@ const Others = () => {
                             </p>
                           </div>
                         </div>
-                      ))}
+                      )))}
                     </ScrollArea>
                   </DialogContent>
                 </Dialog>
@@ -416,7 +441,7 @@ const Others = () => {
                       alt={`Post ${_id}`}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 cursor-pointer group-hover:opacity-100 transition-opacity">
                       <div className="flex items-center space-x-4 text-white">
                         <span className="flex items-center">
                           <Heart className="mr-1" /> {likes.length}

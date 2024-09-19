@@ -37,7 +37,13 @@ const userSchema = new mongoose.Schema({
   profileImgUrl: {
     type: String,
     // default: "default_profile_image.jpg",
-  }
+  },
+  saves: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Posts',
+    }
+  ]
 });
 
 const Users = new mongoose.model("Users", userSchema);

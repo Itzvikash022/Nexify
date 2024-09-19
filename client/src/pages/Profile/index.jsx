@@ -126,6 +126,11 @@ const Profile = () => {
           <div className="w-full max-w-5xl mx-auto">
             <div className="bg-white p-8 shadow-lg rounded-lg mb-3">
               <div className="flex items-start">
+              {loading ? (
+            <div className="ml-12 mt-12 m-auto">
+              <ClipLoader color="gray"/>
+            </div>
+          ) : (
                 <Avatar
                   className="w-32 h-32 border-2 cursor-pointer"
                   onClick={handleImageClick}
@@ -133,8 +138,8 @@ const Profile = () => {
                   <AvatarImage
                     src={userData.profileImgUrl || defaultImg}
                     alt="Profile Image"
-                  />
-                </Avatar>
+                  /> 
+                </Avatar> )}
                 <div className="ml-8 flex-1">
                   <h1 className="text-2xl font-bold mb-1">@{userData.username}</h1>
                   <p className="text-gray-600">{userData.name}</p>
@@ -171,7 +176,11 @@ const Profile = () => {
                       <DialogTitle>Followers</DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="h-[400px]">
-                      {followers.map((follower) => (
+                      { followerCount == 0 ? (
+                        <><p className="text-center text-gray-500">No followers found.</p>
+                        <p className="text-center text-gray-500">Share your profile to let your friends know you're on Nexify!</p></>
+                      ) :  
+                      (followers.map((follower) => (
                         <div
                           key={follower.id}
                           className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
@@ -190,7 +199,7 @@ const Profile = () => {
                             </p>
                           </div>
                         </div>
-                      ))}
+                      )))}
                     </ScrollArea>
                   </DialogContent>
                 </Dialog>
@@ -206,7 +215,12 @@ const Profile = () => {
                       <DialogTitle>Following</DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="h-[400px]">
-                      {following.map((following) => (
+                      { followingCount == 0 ? (
+                        <><p className="text-center text-gray-500">You're not following anyone</p>
+                        <p className="text-center text-gray-500">Follow someone to get started with your Nexify Journey!</p></>
+                      ) : 
+                      
+                      (following.map((following) => (
                         <div
                           key={following.id}
                           className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
@@ -225,7 +239,7 @@ const Profile = () => {
                             </p>
                           </div>
                         </div>
-                      ))}
+                      )))}
                     </ScrollArea>
                   </DialogContent>
                 </Dialog>

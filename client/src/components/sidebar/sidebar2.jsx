@@ -218,7 +218,7 @@ const Sidebar2 = () => {
               <ClipLoader />
             </div>
           ) : (
-                <Avatar className="h-20 w-20">
+                <Avatar className="h-20 w-20 border">
                   <img
                     src={user.profileImgUrl || defaultImg}
                     alt="User"
