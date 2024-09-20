@@ -8,6 +8,7 @@ import EditProfile from '../pages/Profile/edit';
 import Explore from '../pages/explore';
 import Post from '../pages/Posts/main';
 import ProfilePage from '@/pages/test/myprofile';
+import Settings from '@/pages/settings';
 
 
 const PrivateRoutes = ({children}) => {
@@ -70,6 +71,11 @@ const Routes = () => {
       name: 'profile',  
       path: '/testprf/:id', 
       element: <ProfilePage /> 
+    },
+    { id: 11, 
+      name: 'settings',   
+      path: '/settings', 
+      element: <Settings /> 
     },
   ];
 

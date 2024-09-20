@@ -122,7 +122,7 @@ const CreatePost = () => {
   }, [url]);
 
   return (
-    <div className="flex min-h-screen w-full bg-muted items-center ml-12">
+    <div className="flex min-h-screen w-full bg-muted items-center">
       <Sidebar />
       <div className="flex flex-1 flex-col">
         <Sidebar2 />

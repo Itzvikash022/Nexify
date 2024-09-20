@@ -115,6 +115,49 @@ app.post('/api/login', async (req, res) => {
 })
 
 
+// Change Password
+app.post('/api/change-password', auth, async (req, res) => {
+    try {
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+        const userId = req.user.id;
+
+        // Validate that passwords are provided
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).send('All fields are required');
+        }
+
+        // Check if new password and confirm password match
+        if (newPassword !== confirmPassword) {
+            return res.status(400).send('New passwords do not match');
+        }
+
+        // Find the user by ID
+        const user = await Users.findById(userId);
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        // Verify current password
+        const isMatch = await bcryptjs.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).send('Current password is incorrect');
+        }
+
+        // Hash the new password
+        const salt = await bcryptjs.genSalt(10);
+        const hashedPassword = await bcryptjs.hash(newPassword, salt);
+
+        // Update password in the database
+        user.password = hashedPassword;
+        await user.save();
+
+        res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: `Error: ${error.message}` });
+    }
+});
+
+
 //Logout
 app.post('/api/logout', async (req, res) => {
     try {
@@ -195,6 +238,7 @@ app.get('/api/others', auth, async (req, res) => {
             bio : user.bio,
             name : user.name,
             occupation : user.occupation,
+            isPrivate : user.isPrivate,
         };
         res.status(200).json({ posts, userDetails, follower ,isFollowed: !!isFollowed }); //by putting !! -> the variable passes value in boolean[true/false]
                 
@@ -465,6 +509,8 @@ app.delete('/api/unfollow', auth, async (req, res)=>{
     }
 })
 
+
+//Suggestions
 app.get('/api/suggestions', auth, async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
@@ -514,9 +560,11 @@ app.get('/api/suggestions', auth, async (req, res) => {
         }
       });
     }
-
+    console.log(suggestions,'set');
+    
     // Convert the set to an array
     let suggestionsArray = Array.from(suggestions);
+    console.log(suggestions,'array');
 
     // Shuffle and return the top 7 suggestions
     suggestionsArray = shuffleArray(suggestionsArray).slice(0, 7);
@@ -738,6 +786,61 @@ app.post('/api/edit-profile', auth, async (req, res) =>{
     }
 })
 
+// Fetch current privacy setting
+app.get('/api/get-privacy', auth, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await Users.findById(userId);
+
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        // Return the current privacy setting
+        res.status(200).json({ isPrivate: user.isPrivate });
+    } catch (error) {
+        console.error('Error fetching privacy setting:', error);
+        res.status(500).send('Error fetching privacy setting');
+    }
+});
+
+
+// Edit Privacy (Boolean isPrivate)
+app.post('/api/set-privacy', auth, async (req, res) => {
+    console.log("Edit Profile called");
+    try {
+        const { isPrivate } = req.body;
+
+        // Validate isPrivate input
+        if (typeof isPrivate !== 'boolean') {
+            return res.status(400).send('Invalid input for privacy setting');
+        }
+
+        const userId = req.user.id;
+
+        let user = await Users.findById(userId);
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        // Update the isPrivate field
+        user.isPrivate = isPrivate;
+
+        // Save the updated user
+        await user.save();
+        console.log(user, 'updated');
+
+        // Return updated privacy setting
+        res.status(200).send({ message: 'Privacy setting updated', isPrivate: user.isPrivate });
+
+    } catch (error) {
+        console.error('Error updating privacy:', error);
+        res.status(500).send(`Error: ${error.message}`);
+    }
+});
+
+
+
 //Search User Profile
 app.get('/api/search-users', auth, async (req, res) => {
     const { username } = req.query;
@@ -801,72 +904,48 @@ app.get('/api/comments/:postId', async (req, res) => {
     }
 });
 
+
+// Delete Account
 app.delete('/api/delete-account', auth, async (req, res) => {
     try {
         const userId = req.user._id; // Extract the user ID from the authenticated user
-    
-        // Find all posts by the user
-        const userPosts = await Posts.find({ user: userId });
-    
-        // Collect all post IDs for later use
-        const postIds = userPosts.map(post => post._id);
-    
-        // Find all comments associated with these posts
-        const commentsToDelete = await Comments.find({ post: { $in: postIds } });
-    
-        // Delete all comments associated with the user's posts
-        await Promise.all(commentsToDelete.map(comment =>
-            Comments.findByIdAndDelete(comment._id)
-        ));
-    
-        // Delete all posts by the user
-        await Promise.all(userPosts.map(post =>
-            Posts.findByIdAndDelete(post._id)
-        ));
-    
-        // Find all posts liked by the user
-        const postsWithLikes = await Posts.find({ likes: userId });
-    
-        // Update each post to remove the user's ID from the likes array
-        await Promise.all(postsWithLikes.map(post =>
-            Posts.updateOne(
-                { _id: post._id },
-                { $pull: { likes: userId } }
-            )
-        ));
-    
-        // Find all comments left by the user
-        const userComments = await Comments.find({ user: userId });
-    
-        // Delete all comments left by the user
-        await Promise.all(userComments.map(comment =>
-            Comments.findByIdAndDelete(comment._id)
-        ));
-    
-        // Decrement comment count in each post where the user has left a comment
-        await Promise.all(userComments.map(async (comment) => {
-            await Posts.findByIdAndUpdate(
-                comment.post, // Reference to the post where the comment was left
-                { $inc: { commentCount: -1 } }
-            );
-        }));
-    
-        // Step 1: Remove the user from other users' followers
-        await Follow.deleteMany({ followed: userId });
+        const { password } = req.body;
 
-        // Step 2: Remove other users from the user's following list
+        // Find the user by ID
+        const user = await Users.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Verify the password
+        const isMatch = await bcryptjs.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Incorrect password' });
+        }
+
+        // Proceed with account deletion logic (as in your original code)
+
+        // Delete posts, comments, likes, follows, and user account
+        const userPosts = await Posts.find({ user: userId });
+        const postIds = userPosts.map(post => post._id);
+
+        await Comments.deleteMany({ post: { $in: postIds } });
+        await Posts.deleteMany({ user: userId });
+        await Posts.updateMany({ likes: userId }, { $pull: { likes: userId } });
+        await Comments.deleteMany({ user: userId });
+        await Follow.deleteMany({ followed: userId });
         await Follow.deleteMany({ follower: userId });
 
         // Delete the user account
         await Users.findByIdAndDelete(userId);
-    
+
         res.status(200).json({ message: 'Account, posts, comments, and follow relationships deleted successfully' });
     } catch (error) {
-        console.error('Error deleting account, posts, comments, and follow relationships:', error);
+        console.error('Error deleting account:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
-    
 });
+
 
 const PORT = process.env.PORT || 8000;
 

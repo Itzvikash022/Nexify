@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     // default: "default_profile_image.jpg",
   },
+  isPrivate: {
+    type: Boolean,
+    default: "false",
+  },
   saves: [
     {
       type: mongoose.Schema.Types.ObjectId,

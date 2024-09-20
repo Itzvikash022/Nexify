@@ -413,41 +413,46 @@ console.log(isFollowBack, 'tf');
             </div>
 
             {/* Posts grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-              {loading ? (
-                <div className="col-span-full flex justify-center py-20">
-                  <ClipLoader size={50} color="black" />
-                </div>
-              ) : postData.length === 0 ? (
-                <div className="col-span-full text-center py-20">
-                  No Posts Available
-                </div>
-              ) : (
-                postData.map(({ _id, imageUrl, commentCount, likes }) => (
-                  <div
-                    key={_id}
-                    className="relative group aspect-square shadow-md overflow-hidden"
-                    onClick={() => navigate(`/post/${_id}`)}
-                  >
-                    <img
-                      src={imageUrl}
-                      alt={`Post ${_id}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 cursor-pointer group-hover:opacity-100 transition-opacity">
-                      <div className="flex items-center space-x-4 text-white">
-                        <span className="flex items-center">
-                          <Heart className="mr-1" /> {likes.length}
-                        </span>
-                        <span className="flex items-center">
-                          <MessageCircle className="mr-1" /> {commentCount}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+<div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+  {loading ? (
+    <div className="col-span-full flex justify-center py-20">
+      <ClipLoader size={50} color="black" />
+    </div>
+  ) : user?.isPrivate && !isFollowed ? ( // Check if profile is private and not followed
+    <div className="col-span-full text-center py-20">
+      This user's profile is private.
+    </div>
+  ) : postData.length === 0 ? (
+    <div className="col-span-full text-center py-20">
+      No Posts Available
+    </div>
+  ) : (
+    postData.map(({ _id, imageUrl, commentCount, likes }) => (
+      <div
+        key={_id}
+        className="relative group aspect-square shadow-md overflow-hidden"
+        onClick={() => navigate(`/post/${_id}`)}
+      >
+        <img
+          src={imageUrl}
+          alt={`Post ${_id}`}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 cursor-pointer group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center space-x-4 text-white">
+            <span className="flex items-center">
+              <Heart className="mr-1" /> {likes.length}
+            </span>
+            <span className="flex items-center">
+              <MessageCircle className="mr-1" /> {commentCount}
+            </span>
+          </div>
+        </div>
+      </div>
+    ))
+  )}
+</div>
+
           </div>
 
           {isModalOpen && (

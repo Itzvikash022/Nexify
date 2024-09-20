@@ -88,32 +88,6 @@ const Home = () => {
     fetchTrendingUsers();
   }, []);
 
-  // const fetchSuggestedUsers = async () => {
-  //   try {
-  //     const response = await fetch('/api/suggested-users', {
-  //       method: 'GET',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         Authorization: `Bearer ${localStorage.getItem('user:token')}`,
-  //       },
-  //     });
-  
-  //     if (!response.ok) {
-  //       const errorText = await response.text();
-  //       console.error('Server Error Response:', errorText);
-  //       throw new Error('Failed to fetch suggested users');
-  //     }
-  
-  //     const data = await response.json();
-  //     console.log(data, 'Fetched data');
-  //     setSuggestedUsers(data);
-  //   } catch (error) {
-  //     console.error('Failed to fetch suggested users:', error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  
 
   const handleLike = async (_id, index) => {
     try {
@@ -351,7 +325,11 @@ const Home = () => {
               <CardContent c>
                 <ul>
                   {trendingUsers.map((user) => (
-                    <li key={user._id} className="flex rounded-r-lg items-center cursor-pointer border-t py-4 w-[270px] hover:bg-gray-100"  onClick={() => navigate(`/user/${user.username}`)}>
+                    <li key={user._id} className="flex rounded-r-lg items-center cursor-pointer border-t py-4 w-[270px] hover:bg-gray-100"  onClick={() =>
+                      username === user.username
+                        ? navigate("/profile")
+                        : navigate(`/user/${user.username}`)
+                    }>
                       <img
                         src={user.profileImgUrl || defaultImg}
                         alt={user.username}
