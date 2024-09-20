@@ -151,6 +151,9 @@ app.get('/api/profile', auth, async (req, res) => {
     try {
         const { user } = req;
         const posts = await Posts.find({ user : user._id}).sort({ createdAt : -1 })
+
+        const savedPosts = await Posts.find({ _id: { $in: user.saves } });
+        
         const userDetails = {
             username: user.username,
             email: user.email,
@@ -162,7 +165,7 @@ app.get('/api/profile', auth, async (req, res) => {
             occupation: user.occupation,
             bio : user.bio,
         };
-        res.status(200).json({ posts, userDetails })
+        res.status(200).json({ posts,savedPosts, userDetails })
                 
     } catch (error) {
         res.status(500).send(`error : ${error.message}`)
@@ -606,6 +609,43 @@ app.put('/api/unlike', auth, async (req, res)=>{
         }, {returnDocument : 'after'}).populate('user','_id username email').sort({ createdAt : -1 })
         
         res.status(200).json({ updatedPost })
+        
+    } catch (error) {
+        res.status(500).send(`error : ${error.message}`)
+    }
+})
+
+
+//Save Post
+app.put('/api/save', auth, async (req, res)=>{
+    try {
+        const { id } = req.body;
+        const { user } = req;
+        if(!id) return res.status(404).send('id is empty')
+
+        const savePost = await Users.findOneAndUpdate({ _id: user.id }, {
+            $push: { saves: id }
+        }, {new : true })
+        
+        res.status(200).json({ savePost })
+        
+    } catch (error) {
+        res.status(500).send(`error : ${error.message}`)
+    }
+})
+
+//Unsave Post
+app.put('/api/unsave', auth, async (req, res)=>{
+    try {
+        const { id } = req.body;
+        const { user } = req;
+        if(!id) return res.status(404).send('id is empty')
+
+        const unsavePost = await Users.findOneAndUpdate({ _id: user.id }, {
+            $pull: { saves: id }
+        }, {new : true } );
+        
+        res.status(200).json({ unsavePost })
         
     } catch (error) {
         res.status(500).send(`error : ${error.message}`)

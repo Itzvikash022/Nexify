@@ -372,7 +372,7 @@ const Home = () => {
             {/* User suggestions */}
             <Card>
               <CardHeader>
-                <h2 className="text-xl font-semibold">Suggested Users</h2>
+                <h2 className="text-sm font-semibold">People you might also know</h2>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-4">
@@ -385,7 +385,7 @@ const Home = () => {
                         </Avatar>
                         <span>{user.name}</span>
                       </div>
-                      <Button variant="outline" size="sm">Go to Profile</Button>
+                      <Button variant="outline" size="sm" onClick={ () => navigate(`/user/${user.username}`)}>Go to Profile</Button>
                     </li>
                   ))
                  ) : (

@@ -26,7 +26,7 @@ import {
 import Sidebar from "@/components/sidebar";
 import Sidebar2 from "@/components/sidebar/sidebar2";
 import { useParams, useNavigate } from "react-router-dom";
-import { IconHeart, IconMessage } from "@tabler/icons-react";
+import { IconHeart, IconMessage, IconBookmark  } from "@tabler/icons-react";
 import defaultImg from "../../assets/default.jpg";
 
 const Post = () => {
@@ -37,6 +37,8 @@ const Post = () => {
   const [user, setUser] = useState({});
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [liking, setLiking] = useState(false);
 
   useEffect(() => {
     const getPost = async () => {
@@ -140,6 +142,7 @@ const Post = () => {
   };
 
   const handleLike = async () => {
+    setLiking(true);
     try {
       const response = await fetch("http://localhost:8000/api/like", {
         method: "PUT",
@@ -158,10 +161,13 @@ const Post = () => {
       }));
     } catch (error) {
       console.error("Failed to like post:", error);
+    } finally {
+      setLiking(false);
     }
   };
 
   const handleUnlike = async () => {
+    setLiking(true);
     try {
       const response = await fetch("http://localhost:8000/api/unlike", {
         method: "PUT",
@@ -180,6 +186,51 @@ const Post = () => {
       }));
     } catch (error) {
       console.error("Failed to unlike post:", error);
+    } finally {
+      setLiking(false); //left to implement on icons
+    }
+  };
+  
+  const handleSave = async () => {
+    setSaving(true); // left to implement on icons
+    try {
+      const response = await fetch("http://localhost:8000/api/save", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("user:token")}`,
+        },
+        body: JSON.stringify({ id: postData._id }),
+      });
+      const { savePost } = await response.json();
+
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to Save post:", error);
+    } finally {
+      setSaving(false); //left to implement on icons
+    }
+  };
+
+  const handleUnsave = async () => {
+    setSaving(true); // left to implement on icons
+    try {
+      const response = await fetch("http://localhost:8000/api/unsave", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("user:token")}`,
+        },
+        body: JSON.stringify({ id: postData._id }),
+      });
+      const { unsavePost } = await response.json();
+
+      window.location.reload();
+
+    } catch (error) {
+      console.error("Failed to UnSave post:", error);
+    } finally {
+      setSaving(false); //left to implement on icons
     }
   };
 
@@ -221,6 +272,12 @@ const Post = () => {
   }
 
   const isAlreadyLiked = postData.likes.includes(user._id);
+  console.log(user.saves,'saves');
+  console.log(user._id,'id');
+  
+
+  
+  const isAlreadySaved = user.saves.includes(postData._id);
   const formattedDate = new Date(postData.createdAt).toLocaleString("en-US", {
     year: "numeric",
     month: "long",
@@ -327,6 +384,14 @@ const Post = () => {
                   <div className="flex items-center">
                     <IconMessage size={24} />
                     <span className="ml-2">{comments.length} Comments</span>
+                  </div>
+                  <div className="flex items-center cursor-pointer"
+                    onClick={isAlreadySaved ? handleUnsave : handleSave}>
+                  <IconBookmark 
+                      size={24}
+                      color="black"
+                      fill={isAlreadySaved ? "black" : "white"}
+                    />
                   </div>
                 </CardFooter>
               </Card>
