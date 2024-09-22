@@ -26,7 +26,7 @@ const Sidebar = () => {
   useEffect(() => {
     const getUsers = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/user", {
+        const response = await fetch("https://nexify-backend.vercel.app/api/user", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -50,7 +50,7 @@ const Sidebar = () => {
 
       try {
         const response = await fetch(
-          "http://localhost:8000/api/followerCount",
+          "https://nexify-backend.vercel.app/api/followerCount",
           {
             method: "POST",
             headers: {
@@ -79,7 +79,7 @@ const Sidebar = () => {
 
       try {
         const response = await fetch(
-          "http://localhost:8000/api/followingCount",
+          "https://nexify-backend.vercel.app/api/followingCount",
           {
             method: "POST",
             headers: {
@@ -112,7 +112,7 @@ const Sidebar = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/logout", {
+      const response = await fetch("https://nexify-backend.vercel.app/api/logout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
