@@ -28,7 +28,7 @@ const EditProfile = () => {
   useEffect(() => {
     const getUsers = async () => {
       setLoading(true);
-      const response = await fetch("http://localhost:8000/api/user", {
+      const response = await fetch("https://nexify-backend.vercel.app/api/user", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -95,7 +95,7 @@ const EditProfile = () => {
       profileImgUrl: secure_url,
     };
 
-    const res = await fetch(`http://localhost:8000/api/edit-profile`, {
+    const res = await fetch(`https://nexify-backend.vercel.app/api/edit-profile`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -21,7 +21,7 @@ const SettingsPage= () => {
   useEffect(() => {
     const fetchPrivacySetting = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/get-privacy", {
+        const response = await fetch("https://nexify-backend.vercel.app/api/get-privacy", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -48,7 +48,7 @@ const SettingsPage= () => {
     setIsPrivate(checked);
 
     try {
-      const response = await fetch("http://localhost:8000/api/set-privacy", {
+      const response = await fetch("https://nexify-backend.vercel.app/api/set-privacy", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +70,7 @@ const SettingsPage= () => {
 
   const handleChangePassword = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/change-password", {
+      const response = await fetch("https://nexify-backend.vercel.app/api/change-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,7 +95,7 @@ const SettingsPage= () => {
    // Function to handle delete account
    const handleDeleteAccount = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/delete-account', {
+      const response = await fetch('https://nexify-backend.vercel.app/api/delete-account', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

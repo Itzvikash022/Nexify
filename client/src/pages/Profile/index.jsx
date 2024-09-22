@@ -26,7 +26,7 @@ const Profile = () => {
     const fetchUserProfile = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:8000/api/profile", {
+        const response = await fetch("https://nexify-backend.vercel.app/api/profile", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -53,7 +53,7 @@ const Profile = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          "http://localhost:8000/api/user/followers",
+          "https://nexify-backend.vercel.app/api/user/followers",
           {
             method: "GET",
             headers: {
@@ -82,7 +82,7 @@ const Profile = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          "http://localhost:8000/api/user/following",
+          "https://nexify-backend.vercel.app/api/user/following",
           {
             method: "GET",
             headers: {

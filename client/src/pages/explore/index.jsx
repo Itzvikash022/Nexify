@@ -21,7 +21,7 @@ const Explore = () => {
   useEffect(() => {
     if (query.length > 0) {
       const delayDebounceFn = setTimeout(() => {
-        fetch(`http://localhost:8000/api/search-users?username=${query}`, {
+        fetch(`https://nexify-backend.vercel.app/api/search-users?username=${query}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -50,7 +50,7 @@ const Explore = () => {
     const getPosts = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:8000/api/trending-post", {
+        const response = await fetch("https://nexify-backend.vercel.app/api/trending-post", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

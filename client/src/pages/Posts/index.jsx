@@ -45,7 +45,7 @@ const CreatePost = () => {
   useEffect(() => {
     const getUsers = async () => {
       setLoading(true);
-      const response = await fetch("http://localhost:8000/api/user", {
+      const response = await fetch("https://nexify-backend.vercel.app/api/user", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -93,7 +93,7 @@ const CreatePost = () => {
       return;
     }
 
-    const response = await fetch("http://localhost:8000/api/new-post", {
+    const response = await fetch("https://nexify-backend.vercel.app/api/new-post", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

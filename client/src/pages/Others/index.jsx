@@ -37,7 +37,7 @@ const Others = () => {
     const getPosts = async () => {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:8000/api/others?username=${username}`,
+        `https://nexify-backend.vercel.app/api/others?username=${username}`,
         {
           method: "GET",
           headers: {
@@ -62,7 +62,7 @@ const Others = () => {
 
       try {
         const response = await fetch(
-          "http://localhost:8000/api/followerCount",
+          "https://nexify-backend.vercel.app/api/followerCount",
           {
             method: "POST",
             headers: {
@@ -91,7 +91,7 @@ const Others = () => {
 
       try {
         const response = await fetch(
-          "http://localhost:8000/api/followingCount",
+          "https://nexify-backend.vercel.app/api/followingCount",
           {
             method: "POST",
             headers: {
@@ -116,7 +116,7 @@ const Others = () => {
 
   const handleFollow = async () => {
     setLoading(true);
-    const response = await fetch(`http://localhost:8000/api/follow`, {
+    const response = await fetch(`https://nexify-backend.vercel.app/api/follow`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -140,7 +140,7 @@ const Others = () => {
 
   const handleUnfollow = async () => {
     setLoading(true);
-    const response = await fetch(`http://localhost:8000/api/unfollow`, {
+    const response = await fetch(`https://nexify-backend.vercel.app/api/unfollow`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -176,7 +176,7 @@ const Others = () => {
     const getFollowers = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/api/user/${username}/followers`,
+          `https://nexify-backend.vercel.app/api/user/${username}/followers`,
           {
             method: "GET",
             headers: {
@@ -201,7 +201,7 @@ const Others = () => {
     const getFollowing = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/api/user/${username}/following`,
+          `https://nexify-backend.vercel.app/api/user/${username}/following`,
           {
             method: "GET",
             headers: {

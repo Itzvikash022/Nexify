@@ -27,7 +27,7 @@ const Home = () => {
     const getPosts = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:8000/api/feed", {
+        const response = await fetch("https://nexify-backend.vercel.app/api/feed", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -65,7 +65,7 @@ const Home = () => {
   useEffect(() => {
     const fetchTrendingUsers = async () => {
       try {
-        const response = await fetch("http://localhost:8000/trending-users",{
+        const response = await fetch("https://nexify-backend.vercel.app/trending-users",{
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -91,7 +91,7 @@ const Home = () => {
 
   const handleLike = async (_id, index) => {
     try {
-      const response = await fetch("http://localhost:8000/api/like", {
+      const response = await fetch("https://nexify-backend.vercel.app/api/like", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -119,7 +119,7 @@ const Home = () => {
 
   const handleUnlike = async (_id, index) => {
     try {
-      const response = await fetch("http://localhost:8000/api/unlike", {
+      const response = await fetch("https://nexify-backend.vercel.app/api/unlike", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -149,7 +149,7 @@ const Home = () => {
   useEffect(() => {
     const fetchSuggestions = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/suggestions", {
+        const response = await fetch("https://nexify-backend.vercel.app/api/suggestions", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

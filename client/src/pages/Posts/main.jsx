@@ -44,7 +44,7 @@ const Post = () => {
     const getPost = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/api/post?id=${id}`,
+          `https://nexify-backend.vercel.app/api/post?id=${id}`,
           {
             method: "GET",
             headers: {
@@ -67,7 +67,7 @@ const Post = () => {
   useEffect(() => {
     const getUsers = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/user", {
+        const response = await fetch("https://nexify-backend.vercel.app/api/user", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -89,7 +89,7 @@ const Post = () => {
     const getComments = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/api/comments/${id}`,
+          `https://nexify-backend.vercel.app/api/comments/${id}`,
           {
             method: "GET",
             headers: {
@@ -114,7 +114,7 @@ const Post = () => {
   const handleAddComment = async () => {
     if (newComment.trim()) {
       try {
-        const response = await fetch("http://localhost:8000/api/comment", {
+        const response = await fetch("https://nexify-backend.vercel.app/api/comment", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -144,7 +144,7 @@ const Post = () => {
   const handleLike = async () => {
     setLiking(true);
     try {
-      const response = await fetch("http://localhost:8000/api/like", {
+      const response = await fetch("https://nexify-backend.vercel.app/api/like", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -169,7 +169,7 @@ const Post = () => {
   const handleUnlike = async () => {
     setLiking(true);
     try {
-      const response = await fetch("http://localhost:8000/api/unlike", {
+      const response = await fetch("https://nexify-backend.vercel.app/api/unlike", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -194,7 +194,7 @@ const Post = () => {
   const handleSave = async () => {
     setSaving(true); // left to implement on icons
     try {
-      const response = await fetch("http://localhost:8000/api/save", {
+      const response = await fetch("https://nexify-backend.vercel.app/api/save", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -215,7 +215,7 @@ const Post = () => {
   const handleUnsave = async () => {
     setSaving(true); // left to implement on icons
     try {
-      const response = await fetch("http://localhost:8000/api/unsave", {
+      const response = await fetch("https://nexify-backend.vercel.app/api/unsave", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -249,7 +249,7 @@ const Post = () => {
 
   const deletePost = async () => {
     try {
-      await fetch(`http://localhost:8000/api/delete-post?id=${id}`, {
+      await fetch(`https://nexify-backend.vercel.app/api/delete-post?id=${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
