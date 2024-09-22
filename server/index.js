@@ -8,8 +8,27 @@ const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
-app.use(cors({
-    origin: 'https://nexify-chi.vercel.app' // Replace with your frontend domain
+
+// List of allowed origins
+const allowedOrigins = [
+    'https://nexify-chi.vercel.app', 
+    'https://nexify-qch9hlvvy-itzvikash022s-projects.vercel.app',
+    'https://nexify-git-main-itzvikash022s-projects.vercel.app'
+  ];
+  
+  // Use CORS middleware with dynamic origin checking
+  app.use(cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      
+      // Check if the request origin is in the allowed list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error('Not allowed by CORS'));
+      }
+    }
   }));
 app.get('/', (req, res) =>{
     res.send('Hello World!')
