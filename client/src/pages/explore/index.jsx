@@ -7,8 +7,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import defaultImg from "../../assets/default.jpg";
 import ClipLoader from "react-spinners/ClipLoader";
-import { IconHeart, IconMessageCircle,IconCompass } from "@tabler/icons-react";
-import { Helmet } from 'react-helmet';
+import { IconHeart, IconMessageCircle } from "@tabler/icons-react";
 
 const Explore = () => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -81,10 +80,7 @@ const Explore = () => {
   };
 
   return (
-    <><Helmet>
-      <title>Nexify - Explore</title>
-      <link rel="icon" href={IconCompass} />
-    </Helmet>
+    <>
     <div className="min-h-screen bg-background">
         <Sidebar />
         <div className="flex flex-1 flex-col">
