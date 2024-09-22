@@ -51,7 +51,7 @@ export default function LoginSignupForm() {
         imageUrl = responseJson.secure_url;
       }
 
-      const res = await fetch(`http://localhost:8000/api/${isSignInPage ? "login" : "register"}`, {
+      const res = await fetch(`https://nexify-backend.vercel.app/api/${isSignInPage ? "login" : "register"}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
