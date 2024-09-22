@@ -109,7 +109,8 @@ const SettingsPage= () => {
       if (response.ok) {
         setMessage('Account deleted successfully');
         
-
+        localStorage.removeItem("user:token");
+        navigate('/account');
         // Optionally, you could log the user out or redirect them after successful deletion
       } else {
         setMessage(data.message || 'Error deleting account');
@@ -118,8 +119,7 @@ const SettingsPage= () => {
       setMessage('An error occurred while deleting the account');
     }
 
-    localStorage.removeItem("user:token");
-    navigate('/account');
+   
   };
 
   return (
